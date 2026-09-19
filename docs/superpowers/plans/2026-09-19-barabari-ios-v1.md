@@ -25,6 +25,7 @@
 - Offline writes are visible, durable, and recoverable.
 - No heavy UI framework, charting library, analytics SDK, or payment SDK is added to V1.
 - The design uses semantic light and dark appearances, one interactive accent, and semantic status colours.
+- The bottom navigation uses native iOS 26+ Liquid Glass with an iOS 17+ material fallback; glass is limited to the bottom navigation surface.
 - The minimum deployment target is iOS 17.0 because the local persistence design uses SwiftData.
 
 ## Review Focus
@@ -101,6 +102,7 @@ git commit -m "chore: create Barabari iOS foundation"
 - Create: `Barabari/Barabari/DesignSystem/Components/PrimaryActionButton.swift`
 - Create: `Barabari/Barabari/DesignSystem/Components/AmountText.swift`
 - Create: `Barabari/Barabari/DesignSystem/Components/StatusBadge.swift`
+- Create: `Barabari/Barabari/DesignSystem/Components/BarabariTabBar.swift`
 - Create: `Barabari/BarabariTests/DesignSystemTests.swift`
 
 **Interfaces:**
@@ -108,6 +110,7 @@ git commit -m "chore: create Barabari iOS foundation"
 - Produces `enum BarabariSpacing` with `screen`, `card`, `section`, `row`, and `compact` values.
 - Produces `AmountText(minorUnits: Int64, currencyCode: String, style: AmountText.Style)`.
 - Produces `enum AmountFormatter { static func string(minorUnits: Int64, currencyCode: String) -> String }`.
+- Produces `BarabariTabBar(selection: Binding<AppTab>)` with an iOS 26+ Liquid Glass implementation and a pre-iOS 26 material fallback.
 - Produces reusable `BarabariCard`, `PrimaryActionButton`, and `StatusBadge` views that accept content closures and do not own navigation.
 
 - [ ] **Step 1: Write token tests**
@@ -122,6 +125,10 @@ func testAmountFormatterUsesPKR() {
     let value = AmountFormatter.string(minorUnits: 325000, currencyCode: "PKR")
     XCTAssertTrue(value.contains("PKR") || value.contains("Rs"))
 }
+
+func testTabBarDefinesAllPrimaryTabs() {
+    XCTAssertEqual(AppTab.allCases, [.home, .groups, .addExpense, .activity, .settings])
+}
 ```
 
 - [ ] **Step 2: Run the tests and verify they fail**
@@ -132,7 +139,7 @@ Expected: FAIL because the tokens and components are not defined.
 
 - [ ] **Step 3: Implement semantic tokens and components**
 
-Use system colours where available, define light and dark variants, use tabular digits for amounts, keep cards to one hairline treatment, and preserve a 44-point minimum hit area.
+Use system colours where available, define light and dark variants, use tabular digits for amounts, keep cards to one hairline treatment, and preserve a 44-point minimum hit area. Build `BarabariTabBar` as a single `GlassEffectContainer` on iOS 26+, apply `.glassEffect(.regular.interactive(), in: .capsule)` after layout modifiers, and use an `.ultraThinMaterial` capsule fallback on earlier systems. Do not add glass effects to every screen or card.
 
 - [ ] **Step 4: Run the tests and verify they pass**
 
@@ -312,6 +319,7 @@ git commit -m "feat: add SwiftData local repositories"
 
 **Interfaces:**
 - `@MainActor final class AppRouter: ObservableObject` exposes the selected tab and group route.
+- `enum AppTab: CaseIterable { case home, groups, addExpense, activity, settings }`.
 - `struct HomeSnapshot { let amountOwed: Money; let amountOwing: Money; let recentActivity: [ActivityEvent] }`.
 - `enum HomeState { case loading; case loaded(HomeSnapshot); case empty; case offline(HomeSnapshot); case failed(String) }`.
 - `@MainActor final class HomeViewModel: ObservableObject` exposes `homeState: HomeState`, `load()`, and `refresh()`.

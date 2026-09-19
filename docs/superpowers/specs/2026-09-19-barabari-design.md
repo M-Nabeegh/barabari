@@ -267,6 +267,21 @@ AppShell
 - Never use colour as the only indicator of debt or status.
 - Avoid decorative gradients, heavy blur, excessive charts, nested cards, and long onboarding.
 
+### 3.2.1 Bottom navigation Liquid Glass treatment
+
+The bottom navigation is Barabari's single glass surface. It should feel light and native, not like a dashboard panel.
+
+- On iOS 26 and later, use the native SwiftUI Liquid Glass APIs for the bottom tab bar.
+- Wrap the tab items in one `GlassEffectContainer` and keep the related items visually grouped.
+- Apply `.glassEffect(.regular.interactive(), in: .capsule)` after layout and appearance modifiers.
+- Use `.interactive()` only for the tappable tab items.
+- Use one consistent capsule shape and a restrained Barabari accent tint for the selected tab.
+- Do not apply Liquid Glass to every card, list row, or screen background.
+- On iOS 17 through iOS 25, provide a visually similar `.ultraThinMaterial` capsule fallback.
+- Gate the implementation with `#available(iOS 26, *)` so the app remains installable on the V1 deployment floor.
+- Keep the tab bar outside scroll content and respect the safe area and accessibility labels.
+- Do not add custom blur implementations or third-party glass libraries.
+
 ### 3.3 Copy rules
 
 - Say what happened and what the user can do next.
