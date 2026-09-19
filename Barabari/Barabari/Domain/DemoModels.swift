@@ -22,6 +22,8 @@ final class ActivityRecord {
     var title: String
     var subtitle: String
     var amountInPaisa: Int64
+    /// Barabari V1 is PKR-only. Keep this explicit so future records never infer currency from UI state.
+    var currencyCode: String
     var happenedAt: Date
 
     init(
@@ -29,13 +31,14 @@ final class ActivityRecord {
         title: String,
         subtitle: String,
         amountInPaisa: Int64,
+        currencyCode: String = "PKR",
         happenedAt: Date = .now
     ) {
         self.id = id
         self.title = title
         self.subtitle = subtitle
         self.amountInPaisa = amountInPaisa
+        self.currencyCode = currencyCode
         self.happenedAt = happenedAt
     }
 }
-

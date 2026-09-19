@@ -12,6 +12,7 @@
 		A10000000000000000000004 /* DemoModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* DemoModels.swift */; };
 		A10000000000000000000005 /* BarabariLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* BarabariLaunchTests.swift */; };
 		A10000000000000000000006 /* BarabariUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* BarabariUITests.swift */; };
+		A10000000000000000000007 /* AppEnvironmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* AppEnvironmentTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		A20000000000000000000007 /* Barabari.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Barabari.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000000000000000000008 /* BarabariTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BarabariTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000000000000000000009 /* BarabariUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BarabariUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000010 /* AppEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +39,7 @@
 		A40000000000000000000002 /* Barabari */ = {isa = PBXGroup; children = (A40000000000000000000003 /* App */, A40000000000000000000004 /* Domain */); path = Barabari; sourceTree = "<group>"; };
 		A40000000000000000000003 /* App */ = {isa = PBXGroup; children = (A20000000000000000000001 /* BarabariApp.swift */, A20000000000000000000002 /* AppEnvironment.swift */, A20000000000000000000003 /* ContentView.swift */); path = App; sourceTree = "<group>"; };
 		A40000000000000000000004 /* Domain */ = {isa = PBXGroup; children = (A20000000000000000000004 /* DemoModels.swift */); path = Domain; sourceTree = "<group>"; };
-		A40000000000000000000005 /* BarabariTests */ = {isa = PBXGroup; children = (A20000000000000000000005 /* BarabariLaunchTests.swift */); path = BarabariTests; sourceTree = "<group>"; };
+		A40000000000000000000005 /* BarabariTests */ = {isa = PBXGroup; children = (A20000000000000000000005 /* BarabariLaunchTests.swift */, A20000000000000000000010 /* AppEnvironmentTests.swift */); path = BarabariTests; sourceTree = "<group>"; };
 		A40000000000000000000006 /* BarabariUITests */ = {isa = PBXGroup; children = (A20000000000000000000006 /* BarabariUITests.swift */); path = BarabariUITests; sourceTree = "<group>"; };
 		A40000000000000000000007 /* Products */ = {isa = PBXGroup; children = (A20000000000000000000007 /* Barabari.app */, A20000000000000000000008 /* BarabariTests.xctest */, A20000000000000000000009 /* BarabariUITests.xctest */); name = Products; sourceTree = "<group>"; };
 /* End PBXGroup section */
@@ -60,7 +62,7 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		A70000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001 /* BarabariApp.swift in Sources */, A10000000000000000000002 /* AppEnvironment.swift in Sources */, A10000000000000000000003 /* ContentView.swift in Sources */, A10000000000000000000004 /* DemoModels.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
-		A70000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005 /* BarabariLaunchTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		A70000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005 /* BarabariLaunchTests.swift in Sources */, A10000000000000000000007 /* AppEnvironmentTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		A70000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000006 /* BarabariUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 

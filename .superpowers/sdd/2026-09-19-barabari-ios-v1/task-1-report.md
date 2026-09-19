@@ -86,3 +86,61 @@ Result: no whitespace errors and no unresolved accent-resource or placeholder ma
 - The installed simulator is iPhone 17 Pro on iOS 26.5, not the brief's iPhone 15 destination. Verification used the available simulator UUID.
 - Simulator launch logs contain known CoreData recovery/noise about an initially missing Application Support directory, plus Xcode simulator debugger warnings. Both tests still passed. This should be rechecked on a clean simulator and a physical iPhone during final acceptance.
 - A physical-device run still needs the user's Apple Developer signing team selected in Xcode. No signing identity was changed by this task.
+
+## Review-fix addendum
+
+### Findings fixed
+
+1. Added `ActivityRecord.currencyCode` with a `"PKR"` default. This keeps demo financial records explicitly PKR-denominated instead of relying on presentation or future feature state.
+2. Added an optional, Git-ignored `Barabari/Config/Local.xcconfig` override path. `Debug.xcconfig` now supplies buildable non-secret defaults first and uses `#include? "Local.xcconfig"` afterward, so a clean checkout builds while a developer may safely override provider values locally.
+
+### Added test
+
+- `AppEnvironmentTests.testDemoActivityRecordsUsePKR` creates the seeded in-memory demo environment, fetches activity records, and verifies every record has `currencyCode == "PKR"`.
+
+### Red phase
+
+```sh
+xcodebuild -project Barabari.xcodeproj -scheme Barabari -destination 'platform=iOS Simulator,id=3A10C54D-4D4B-4BEC-B196-68EE205462B0' test -only-testing:BarabariTests/AppEnvironmentTests/testDemoActivityRecordsUsePKR
+```
+
+Expected failing output observed before implementation:
+
+```text
+Value of type 'ActivityRecord' has no member 'currencyCode'
+** TEST FAILED **
+```
+
+### Focused test after fix
+
+```sh
+xcodebuild -project Barabari.xcodeproj -scheme Barabari -destination 'platform=iOS Simulator,id=3A10C54D-4D4B-4BEC-B196-68EE205462B0' test -only-testing:BarabariTests/AppEnvironmentTests/testDemoActivityRecordsUsePKR
+```
+
+Output: `TEST SUCCEEDED`; `testDemoActivityRecordsUsePKR` passed, 1 test and 0 failures.
+
+### Full unit target and build after fix
+
+```sh
+xcodebuild -project Barabari.xcodeproj -scheme Barabari -destination 'platform=iOS Simulator,id=3A10C54D-4D4B-4BEC-B196-68EE205462B0' test -only-testing:BarabariTests
+xcodebuild -project Barabari.xcodeproj -scheme Barabari -sdk iphonesimulator -configuration Debug build CODE_SIGNING_ALLOWED=NO
+git check-ignore -v Barabari/Config/Local.xcconfig
+git diff --check
+```
+
+Outputs:
+
+- Unit target: `TEST SUCCEEDED`; 2 tests and 0 failures.
+- Simulator build: `BUILD SUCCEEDED`.
+- Git ignore check: `Barabari/.gitignore:7:Barabari/Config/Local.xcconfig Barabari/Config/Local.xcconfig`.
+- Whitespace check: no output, therefore clean.
+
+### Transient verification note
+
+One initial full-unit retry failed because the shared simulator reported `Application failed preflight checks` with `Busy`. I terminated the existing simulator app process, reran the same unit command, and it passed. This was simulator contention, not an app assertion or compile failure.
+
+### Post-fix self-review
+
+- The PKR property is stored on the model and covered by an in-memory SwiftData test.
+- Local configuration is opt-in, ignored, and does not add a required source-controlled secret file.
+- No feature behavior or backend coupling was added.

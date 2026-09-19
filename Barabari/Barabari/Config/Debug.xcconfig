@@ -1,4 +1,5 @@
 // Development-only defaults. Do not commit credentials here.
 BARABARI_PROVIDER_BASE_URL =
 BARABARI_AUTH_MODE = local
-
+// Optional machine-local values may be placed in Local.xcconfig, which is gitignored.
+#include? "Local.xcconfig"

@@ -15,7 +15,7 @@ The app starts in local mode and does not require a backend URL, credentials, co
 
 ## Development configuration
 
-`Barabari/Config/Debug.xcconfig` contains non-secret development defaults. Add real provider values only in a local, ignored configuration file when a remote backend is introduced.
+`Barabari/Config/Debug.xcconfig` contains non-secret development defaults. If a remote backend is introduced, place machine-local provider values in `Barabari/Config/Local.xcconfig`. That optional file is included only when present and is ignored by Git, so a clean checkout always builds without secrets.
 
 ## Architecture
 
@@ -25,4 +25,3 @@ The app starts in local mode and does not require a backend URL, credentials, co
 - Domain, data, and feature boundaries to keep future backend adapters independent
 
 See `docs/superpowers/specs/2026-09-19-barabari-design.md` for the approved V1 product design.
-
