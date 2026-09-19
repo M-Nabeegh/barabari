@@ -173,6 +173,164 @@ final class LedgerUseCaseTests: XCTestCase {
         XCTAssertEqual(settlements.savedSettlements, [settlement])
     }
 
+    // Catches a change that converts an Int64.min balance to a positive magnitude by trapping instead of reporting overflow.
+    func testBalanceCalculatorReportsOverflowForUnrepresentableDebtorMagnitude() {
+        let secondCreditorID = UUID(uuidString: "00000000-0000-0000-0000-000000000004")!
+        let firstExpense = Expense(
+            groupID: groupID,
+            title: "Large bill",
+            note: nil,
+            total: Money(minorUnits: Int64.max, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [ExpenseSplit(userID: memberID, amount: Money(minorUnits: Int64.max, currencyCode: "PKR"))],
+            splitMethod: .exact([memberID: Int64.max]),
+            occurredAt: Date(timeIntervalSince1970: 1),
+            createdByUserID: ownerID
+        )
+        let secondExpense = Expense(
+            groupID: groupID,
+            title: "One paisa",
+            note: nil,
+            total: Money(minorUnits: 1, currencyCode: "PKR"),
+            paidByUserID: secondCreditorID,
+            splits: [ExpenseSplit(userID: memberID, amount: Money(minorUnits: 1, currencyCode: "PKR"))],
+            splitMethod: .exact([memberID: 1]),
+            occurredAt: Date(timeIntervalSince1970: 2),
+            createdByUserID: secondCreditorID
+        )
+
+        XCTAssertThrowsError(
+            try BalanceCalculator.calculate(
+                expenses: [firstExpense, secondExpense],
+                settlements: [],
+                members: members(in: groupID, users: [ownerID, memberID, secondCreditorID])
+            )
+        ) { error in
+            XCTAssertEqual(error as? BalanceCalculationError, .arithmeticOverflow)
+        }
+    }
+
+    // Catches a change that drops a former member's unresolved debt from historical records.
+    func testBalanceCalculatorIncludesFormerMembersInHistoricalLedger() throws {
+        let formerMember = GroupMember(
+            groupID: groupID,
+            userID: memberID,
+            role: .member,
+            joinedAt: Date(timeIntervalSince1970: 0),
+            removedAt: Date(timeIntervalSince1970: 4)
+        )
+        let expense = Expense(
+            groupID: groupID,
+            title: "Old dinner",
+            note: nil,
+            total: Money(minorUnits: 1_000, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [ExpenseSplit(userID: memberID, amount: Money(minorUnits: 1_000, currencyCode: "PKR"))],
+            splitMethod: .exact([memberID: 1_000]),
+            occurredAt: Date(timeIntervalSince1970: 1),
+            createdByUserID: ownerID
+        )
+
+        let summary = try BalanceCalculator.calculate(
+            expenses: [expense],
+            settlements: [],
+            members: [
+                GroupMember(groupID: groupID, userID: ownerID, role: .owner, joinedAt: Date(timeIntervalSince1970: 0)),
+                formerMember
+            ]
+        )
+
+        XCTAssertEqual(summary.netPosition(for: ownerID)?.amount, Money(minorUnits: 1_000, currencyCode: "PKR"))
+        XCTAssertEqual(summary.netPosition(for: memberID)?.amount, Money(minorUnits: -1_000, currencyCode: "PKR"))
+    }
+
+    // Catches a change that accepts a persisted expense whose actor never belonged to the group.
+    func testBalanceCalculatorRejectsExpenseWithUnknownCreator() {
+        let expense = Expense(
+            groupID: groupID,
+            title: "Dinner",
+            note: nil,
+            total: Money(minorUnits: 100, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [ExpenseSplit(userID: memberID, amount: Money(minorUnits: 100, currencyCode: "PKR"))],
+            splitMethod: .exact([memberID: 100]),
+            occurredAt: Date(timeIntervalSince1970: 1),
+            createdByUserID: outsiderID
+        )
+
+        XCTAssertThrowsError(
+            try BalanceCalculator.calculate(
+                expenses: [expense],
+                settlements: [],
+                members: members(in: groupID, users: [ownerID, memberID])
+            )
+        ) { error in
+            XCTAssertEqual(error as? BalanceCalculationError, .unknownMember(self.outsiderID))
+        }
+    }
+
+    // Catches a change that accepts a persisted settlement whose actor never belonged to the group.
+    func testBalanceCalculatorRejectsSettlementWithUnknownCreator() {
+        let settlement = Settlement(
+            groupID: groupID,
+            fromUserID: memberID,
+            toUserID: ownerID,
+            amount: Money(minorUnits: 100, currencyCode: "PKR"),
+            method: .cash,
+            note: nil,
+            occurredAt: Date(timeIntervalSince1970: 1),
+            createdByUserID: outsiderID
+        )
+
+        XCTAssertThrowsError(
+            try BalanceCalculator.calculate(
+                expenses: [],
+                settlements: [settlement],
+                members: members(in: groupID, users: [ownerID, memberID])
+            )
+        ) { error in
+            XCTAssertEqual(error as? BalanceCalculationError, .unknownMember(self.outsiderID))
+        }
+    }
+
+    // Catches a change that includes a soft-deleted expense or settlement in the current balance.
+    func testBalanceCalculatorIgnoresTombstonedLedgerRecords() throws {
+        let tombstoneDate = Date(timeIntervalSince1970: 5)
+        let deletedExpense = Expense(
+            groupID: groupID,
+            title: "Deleted expense",
+            note: nil,
+            total: Money(minorUnits: 100, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [ExpenseSplit(userID: memberID, amount: Money(minorUnits: 100, currencyCode: "PKR"))],
+            splitMethod: .exact([memberID: 100]),
+            occurredAt: Date(timeIntervalSince1970: 1),
+            createdByUserID: outsiderID,
+            deletedAt: tombstoneDate
+        )
+        let deletedSettlement = Settlement(
+            groupID: groupID,
+            fromUserID: memberID,
+            toUserID: ownerID,
+            amount: Money(minorUnits: 100, currencyCode: "PKR"),
+            method: .cash,
+            note: nil,
+            occurredAt: Date(timeIntervalSince1970: 2),
+            createdByUserID: outsiderID,
+            deletedAt: tombstoneDate
+        )
+
+        let summary = try BalanceCalculator.calculate(
+            expenses: [deletedExpense],
+            settlements: [deletedSettlement],
+            members: members(in: groupID, users: [ownerID, memberID])
+        )
+
+        XCTAssertEqual(summary.netPosition(for: ownerID)?.amount, Money(minorUnits: 0, currencyCode: "PKR"))
+        XCTAssertEqual(summary.netPosition(for: memberID)?.amount, Money(minorUnits: 0, currencyCode: "PKR"))
+        XCTAssertTrue(summary.transfers.isEmpty)
+    }
+
     private func expenseDraft(
         total: Money = Money(minorUnits: 1_000, currencyCode: "PKR"),
         paidByUserID: UUID? = nil,
