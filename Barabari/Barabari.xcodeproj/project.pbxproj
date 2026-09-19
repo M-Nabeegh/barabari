@@ -22,6 +22,12 @@
 		A10000000000000000000014 /* AmountText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* AmountText.swift */; };
 		A10000000000000000000015 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* StatusBadge.swift */; };
 		A10000000000000000000016 /* BarabariTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* BarabariTabBar.swift */; };
+		A10000000000000000000017 /* SplitCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* SplitCalculatorTests.swift */; };
+		A10000000000000000000018 /* Money.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* Money.swift */; };
+		A10000000000000000000019 /* PercentageBasisPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022 /* PercentageBasisPoints.swift */; };
+		A10000000000000000000020 /* ExpenseSplit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000023 /* ExpenseSplit.swift */; };
+		A10000000000000000000021 /* SplitMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000024 /* SplitMethod.swift */; };
+		A10000000000000000000022 /* SplitCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025 /* SplitCalculator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +50,12 @@
 		A20000000000000000000017 /* AmountText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountText.swift; sourceTree = "<group>"; };
 		A20000000000000000000018 /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
 		A20000000000000000000019 /* BarabariTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarabariTabBar.swift; sourceTree = "<group>"; };
+		A20000000000000000000020 /* SplitCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitCalculatorTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000021 /* Money.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Money.swift; sourceTree = "<group>"; };
+		A20000000000000000000022 /* PercentageBasisPoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PercentageBasisPoints.swift; sourceTree = "<group>"; };
+		A20000000000000000000023 /* ExpenseSplit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSplit.swift; sourceTree = "<group>"; };
+		A20000000000000000000024 /* SplitMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitMethod.swift; sourceTree = "<group>"; };
+		A20000000000000000000025 /* SplitCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitCalculator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,12 +68,16 @@
 		A40000000000000000000001 = {isa = PBXGroup; children = (A40000000000000000000002 /* Barabari */, A40000000000000000000005 /* BarabariTests */, A40000000000000000000006 /* BarabariUITests */, A40000000000000000000007 /* Products */); sourceTree = "<group>"; };
 		A40000000000000000000002 /* Barabari */ = {isa = PBXGroup; children = (A40000000000000000000003 /* App */, A40000000000000000000004 /* Domain */, A40000000000000000000008 /* DesignSystem */); path = Barabari; sourceTree = "<group>"; };
 		A40000000000000000000003 /* App */ = {isa = PBXGroup; children = (A20000000000000000000001 /* BarabariApp.swift */, A20000000000000000000002 /* AppEnvironment.swift */, A20000000000000000000003 /* ContentView.swift */); path = App; sourceTree = "<group>"; };
-		A40000000000000000000004 /* Domain */ = {isa = PBXGroup; children = (A20000000000000000000004 /* DemoModels.swift */); path = Domain; sourceTree = "<group>"; };
-		A40000000000000000000005 /* BarabariTests */ = {isa = PBXGroup; children = (A20000000000000000000005 /* BarabariLaunchTests.swift */, A20000000000000000000010 /* AppEnvironmentTests.swift */, A20000000000000000000011 /* DesignSystemTests.swift */); path = BarabariTests; sourceTree = "<group>"; };
+		A40000000000000000000004 /* Domain */ = {isa = PBXGroup; children = (A20000000000000000000004 /* DemoModels.swift */, A40000000000000000000011 /* ValueTypes */, A40000000000000000000012 /* Models */, A40000000000000000000013 /* Services */); path = Domain; sourceTree = "<group>"; };
+		A40000000000000000000005 /* BarabariTests */ = {isa = PBXGroup; children = (A20000000000000000000005 /* BarabariLaunchTests.swift */, A20000000000000000000010 /* AppEnvironmentTests.swift */, A20000000000000000000011 /* DesignSystemTests.swift */, A40000000000000000000010 /* Domain */); path = BarabariTests; sourceTree = "<group>"; };
 		A40000000000000000000006 /* BarabariUITests */ = {isa = PBXGroup; children = (A20000000000000000000006 /* BarabariUITests.swift */); path = BarabariUITests; sourceTree = "<group>"; };
 		A40000000000000000000007 /* Products */ = {isa = PBXGroup; children = (A20000000000000000000007 /* Barabari.app */, A20000000000000000000008 /* BarabariTests.xctest */, A20000000000000000000009 /* BarabariUITests.xctest */); name = Products; sourceTree = "<group>"; };
 		A40000000000000000000008 /* DesignSystem */ = {isa = PBXGroup; children = (A20000000000000000000012 /* BarabariColors.swift */, A20000000000000000000013 /* BarabariTypography.swift */, A20000000000000000000014 /* BarabariSpacing.swift */, A40000000000000000000009 /* Components */); path = DesignSystem; sourceTree = "<group>"; };
 		A40000000000000000000009 /* Components */ = {isa = PBXGroup; children = (A20000000000000000000015 /* BarabariCard.swift */, A20000000000000000000016 /* PrimaryActionButton.swift */, A20000000000000000000017 /* AmountText.swift */, A20000000000000000000018 /* StatusBadge.swift */, A20000000000000000000019 /* BarabariTabBar.swift */); path = Components; sourceTree = "<group>"; };
+		A40000000000000000000010 /* Domain */ = {isa = PBXGroup; children = (A20000000000000000000020 /* SplitCalculatorTests.swift */); path = Domain; sourceTree = "<group>"; };
+		A40000000000000000000011 /* ValueTypes */ = {isa = PBXGroup; children = (A20000000000000000000021 /* Money.swift */, A20000000000000000000022 /* PercentageBasisPoints.swift */); path = ValueTypes; sourceTree = "<group>"; };
+		A40000000000000000000012 /* Models */ = {isa = PBXGroup; children = (A20000000000000000000023 /* ExpenseSplit.swift */, A20000000000000000000024 /* SplitMethod.swift */); path = Models; sourceTree = "<group>"; };
+		A40000000000000000000013 /* Services */ = {isa = PBXGroup; children = (A20000000000000000000025 /* SplitCalculator.swift */); path = Services; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -81,8 +97,8 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A70000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001 /* BarabariApp.swift in Sources */, A10000000000000000000002 /* AppEnvironment.swift in Sources */, A10000000000000000000003 /* ContentView.swift in Sources */, A10000000000000000000004 /* DemoModels.swift in Sources */, A10000000000000000000009 /* BarabariColors.swift in Sources */, A10000000000000000000010 /* BarabariTypography.swift in Sources */, A10000000000000000000011 /* BarabariSpacing.swift in Sources */, A10000000000000000000012 /* BarabariCard.swift in Sources */, A10000000000000000000013 /* PrimaryActionButton.swift in Sources */, A10000000000000000000014 /* AmountText.swift in Sources */, A10000000000000000000015 /* StatusBadge.swift in Sources */, A10000000000000000000016 /* BarabariTabBar.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
-		A70000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005 /* BarabariLaunchTests.swift in Sources */, A10000000000000000000007 /* AppEnvironmentTests.swift in Sources */, A10000000000000000000008 /* DesignSystemTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		A70000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001 /* BarabariApp.swift in Sources */, A10000000000000000000002 /* AppEnvironment.swift in Sources */, A10000000000000000000003 /* ContentView.swift in Sources */, A10000000000000000000004 /* DemoModels.swift in Sources */, A10000000000000000000009 /* BarabariColors.swift in Sources */, A10000000000000000000010 /* BarabariTypography.swift in Sources */, A10000000000000000000011 /* BarabariSpacing.swift in Sources */, A10000000000000000000012 /* BarabariCard.swift in Sources */, A10000000000000000000013 /* PrimaryActionButton.swift in Sources */, A10000000000000000000014 /* AmountText.swift in Sources */, A10000000000000000000015 /* StatusBadge.swift in Sources */, A10000000000000000000016 /* BarabariTabBar.swift in Sources */, A10000000000000000000018 /* Money.swift in Sources */, A10000000000000000000019 /* PercentageBasisPoints.swift in Sources */, A10000000000000000000020 /* ExpenseSplit.swift in Sources */, A10000000000000000000021 /* SplitMethod.swift in Sources */, A10000000000000000000022 /* SplitCalculator.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		A70000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005 /* BarabariLaunchTests.swift in Sources */, A10000000000000000000007 /* AppEnvironmentTests.swift in Sources */, A10000000000000000000008 /* DesignSystemTests.swift in Sources */, A10000000000000000000017 /* SplitCalculatorTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 		A70000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000006 /* BarabariUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
