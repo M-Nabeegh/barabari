@@ -1,0 +1,13 @@
+.worktrees/
+.DS_Store
+
+# Xcode user and build state
+*.xcuserstate
+DerivedData/
+build/
+
+# Local environment values
+*.xcconfig.local
+.env
+.env.*
+!.env.example
