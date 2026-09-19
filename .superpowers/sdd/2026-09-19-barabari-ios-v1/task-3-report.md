@@ -82,3 +82,34 @@ BUILD SUCCEEDED
 - The app is intentionally PKR-only in V1. Multi-currency should be introduced as a dedicated product and migration decision, not by silently relaxing the split calculator.
 - A later ledger task should preserve the canonical split result returned by this calculator rather than recomputing amounts from UI inputs.
 - Participants are de-duplicated defensively. The future Group domain should still prevent duplicate group-member records at the model and persistence layers.
+
+## Review follow-up: deterministic weighted remainder coverage
+
+Added regression tests for the review findings without changing production behavior:
+
+- Percentage split with a one-paisa total and equal 5,000-basis-point fractions. The first UUID-byte ordered participant receives the paisa even when provided second in UI order.
+- Shares split with a one-paisa total and equal shares. The first UUID-byte ordered participant receives the paisa even when provided second in UI order.
+- Negative exact amount, negative percentage basis points, and negative share weights.
+- Duplicate participant input normalization, proving a duplicate ID cannot become a second debtor.
+
+Focused verification after the follow-up:
+
+```text
+xcodebuild -project Barabari.xcodeproj -scheme Barabari \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  test -only-testing:BarabariTests/SplitCalculatorTests
+
+18 tests, 0 failures
+TEST SUCCEEDED
+```
+
+Full unit verification after the follow-up:
+
+```text
+xcodebuild -project Barabari.xcodeproj -scheme Barabari \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  test -only-testing:BarabariTests
+
+25 tests, 0 failures
+TEST SUCCEEDED
+```

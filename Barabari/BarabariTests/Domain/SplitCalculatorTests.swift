@@ -89,6 +89,33 @@ final class SplitCalculatorTests: XCTestCase {
         XCTAssertEqual(splits.map(\.amount.minorUnits).reduce(0, +), 101)
     }
 
+    // Catches a change that resolves equal percentage fractions by input order instead of UUID-byte order.
+    func testPercentageSplitUsesUUIDOrderWhenFractionalRemaindersTie() throws {
+        let splits = try SplitCalculator.calculate(
+            total: Money(minorUnits: 1, currencyCode: "PKR"),
+            participants: [participantB, participantA],
+            method: .percentage([participantA: 5_000, participantB: 5_000])
+        )
+
+        XCTAssertEqual(splits, [
+            ExpenseSplit(userID: participantA, amount: Money(minorUnits: 1, currencyCode: "PKR")),
+            ExpenseSplit(userID: participantB, amount: Money(minorUnits: 0, currencyCode: "PKR"))
+        ])
+    }
+
+    // Catches a change that lets a negative percentage preserve a valid total by offsetting it with another value.
+    func testPercentageSplitRejectsNegativeBasisPoints() {
+        XCTAssertThrowsError(
+            try SplitCalculator.calculate(
+                total: Money(minorUnits: 100, currencyCode: "PKR"),
+                participants: [participantA, participantB],
+                method: .percentage([participantA: -1, participantB: 10_001])
+            )
+        ) { error in
+            XCTAssertEqual(error as? SplitError, .invalidPercentageTotal)
+        }
+    }
+
     // Catches a change that applies share weights as fixed amounts rather than proportions.
     func testSharesSplitAllocatesProportionallyAndConservesTotal() throws {
         let splits = try SplitCalculator.calculate(
@@ -104,6 +131,20 @@ final class SplitCalculatorTests: XCTestCase {
         XCTAssertEqual(splits.map(\.amount.minorUnits).reduce(0, +), 10)
     }
 
+    // Catches a change that resolves equal shares fractions by input order instead of UUID-byte order.
+    func testSharesSplitUsesUUIDOrderWhenFractionalRemaindersTie() throws {
+        let splits = try SplitCalculator.calculate(
+            total: Money(minorUnits: 1, currencyCode: "PKR"),
+            participants: [participantB, participantA],
+            method: .shares([participantA: 1, participantB: 1])
+        )
+
+        XCTAssertEqual(splits, [
+            ExpenseSplit(userID: participantA, amount: Money(minorUnits: 1, currencyCode: "PKR")),
+            ExpenseSplit(userID: participantB, amount: Money(minorUnits: 0, currencyCode: "PKR"))
+        ])
+    }
+
     // Catches a change that permits a zero or negative share, which makes proportional allocation undefined.
     func testSharesSplitRejectsNonPositiveWeights() {
         XCTAssertThrowsError(
@@ -111,6 +152,19 @@ final class SplitCalculatorTests: XCTestCase {
                 total: Money(minorUnits: 100, currencyCode: "PKR"),
                 participants: [participantA, participantB],
                 method: .shares([participantA: 0, participantB: 1])
+            )
+        ) { error in
+            XCTAssertEqual(error as? SplitError, .invalidShare)
+        }
+    }
+
+    // Catches a change that lets a negative share evade validation when another share is positive.
+    func testSharesSplitRejectsNegativeWeights() {
+        XCTAssertThrowsError(
+            try SplitCalculator.calculate(
+                total: Money(minorUnits: 100, currencyCode: "PKR"),
+                participants: [participantA, participantB],
+                method: .shares([participantA: -1, participantB: 2])
             )
         ) { error in
             XCTAssertEqual(error as? SplitError, .invalidShare)
@@ -130,6 +184,19 @@ final class SplitCalculatorTests: XCTestCase {
         }
     }
 
+    // Catches a change that accepts a negative exact amount when all exact values still total the expense.
+    func testExactSplitRejectsNegativeAmount() {
+        XCTAssertThrowsError(
+            try SplitCalculator.calculate(
+                total: Money(minorUnits: 100, currencyCode: "PKR"),
+                participants: [participantA, participantB],
+                method: .exact([participantA: -1, participantB: 101])
+            )
+        ) { error in
+            XCTAssertEqual(error as? SplitError, .invalidExactTotal)
+        }
+    }
+
     // Catches a change that lets an empty participant list produce an invalid expense.
     func testSplitRejectsNoParticipants() {
         XCTAssertThrowsError(
@@ -141,6 +208,20 @@ final class SplitCalculatorTests: XCTestCase {
         ) { error in
             XCTAssertEqual(error as? SplitError, .noParticipants)
         }
+    }
+
+    // Catches a change that treats duplicate input IDs as distinct debtors.
+    func testSplitNormalizesDuplicateParticipantsBeforeAllocating() throws {
+        let splits = try SplitCalculator.calculate(
+            total: Money(minorUnits: 3, currencyCode: "PKR"),
+            participants: [participantB, participantA, participantB],
+            method: .equal
+        )
+
+        XCTAssertEqual(splits, [
+            ExpenseSplit(userID: participantA, amount: Money(minorUnits: 2, currencyCode: "PKR")),
+            ExpenseSplit(userID: participantB, amount: Money(minorUnits: 1, currencyCode: "PKR"))
+        ])
     }
 
     // Catches a change that allows zero or negative expenses into the ledger.
