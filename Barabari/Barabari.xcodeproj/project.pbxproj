@@ -1,0 +1,100 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* BarabariApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* BarabariApp.swift */; };
+		A10000000000000000000002 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* AppEnvironment.swift */; };
+		A10000000000000000000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* ContentView.swift */; };
+		A10000000000000000000004 /* DemoModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* DemoModels.swift */; };
+		A10000000000000000000005 /* BarabariLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* BarabariLaunchTests.swift */; };
+		A10000000000000000000006 /* BarabariUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* BarabariUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000000000000000000001 /* BarabariApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarabariApp.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* DemoModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* BarabariLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarabariLaunchTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000006 /* BarabariUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarabariUITests.swift; sourceTree = "<group>"; };
+		A20000000000000000000007 /* Barabari.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Barabari.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000008 /* BarabariTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BarabariTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000009 /* BarabariUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BarabariUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000003 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A40000000000000000000001 = {isa = PBXGroup; children = (A40000000000000000000002 /* Barabari */, A40000000000000000000005 /* BarabariTests */, A40000000000000000000006 /* BarabariUITests */, A40000000000000000000007 /* Products */); sourceTree = "<group>"; };
+		A40000000000000000000002 /* Barabari */ = {isa = PBXGroup; children = (A40000000000000000000003 /* App */, A40000000000000000000004 /* Domain */); path = Barabari; sourceTree = "<group>"; };
+		A40000000000000000000003 /* App */ = {isa = PBXGroup; children = (A20000000000000000000001 /* BarabariApp.swift */, A20000000000000000000002 /* AppEnvironment.swift */, A20000000000000000000003 /* ContentView.swift */); path = App; sourceTree = "<group>"; };
+		A40000000000000000000004 /* Domain */ = {isa = PBXGroup; children = (A20000000000000000000004 /* DemoModels.swift */); path = Domain; sourceTree = "<group>"; };
+		A40000000000000000000005 /* BarabariTests */ = {isa = PBXGroup; children = (A20000000000000000000005 /* BarabariLaunchTests.swift */); path = BarabariTests; sourceTree = "<group>"; };
+		A40000000000000000000006 /* BarabariUITests */ = {isa = PBXGroup; children = (A20000000000000000000006 /* BarabariUITests.swift */); path = BarabariUITests; sourceTree = "<group>"; };
+		A40000000000000000000007 /* Products */ = {isa = PBXGroup; children = (A20000000000000000000007 /* Barabari.app */, A20000000000000000000008 /* BarabariTests.xctest */, A20000000000000000000009 /* BarabariUITests.xctest */); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000000000000000000001 /* Barabari */ = {isa = PBXNativeTarget; buildConfigurationList = A60000000000000000000001 /* Build configuration list for PBXNativeTarget "Barabari" */; buildPhases = (A30000000000000000000001 /* Frameworks */, A70000000000000000000001 /* Sources */, A80000000000000000000001 /* Resources */); buildRules = (); dependencies = (); name = Barabari; productName = Barabari; productReference = A20000000000000000000007 /* Barabari.app */; productType = "com.apple.product-type.application"; };
+		A50000000000000000000002 /* BarabariTests */ = {isa = PBXNativeTarget; buildConfigurationList = A60000000000000000000002 /* Build configuration list for PBXNativeTarget "BarabariTests" */; buildPhases = (A30000000000000000000002 /* Frameworks */, A70000000000000000000002 /* Sources */, A80000000000000000000002 /* Resources */); buildRules = (); dependencies = (A90000000000000000000001 /* PBXTargetDependency */); name = BarabariTests; productName = BarabariTests; productReference = A20000000000000000000008 /* BarabariTests.xctest */; productType = "com.apple.product-type.bundle.unit-test"; };
+		A50000000000000000000003 /* BarabariUITests */ = {isa = PBXNativeTarget; buildConfigurationList = A60000000000000000000003 /* Build configuration list for PBXNativeTarget "BarabariUITests" */; buildPhases = (A30000000000000000000003 /* Frameworks */, A70000000000000000000003 /* Sources */, A80000000000000000000003 /* Resources */); buildRules = (); dependencies = (A90000000000000000000002 /* PBXTargetDependency */); name = BarabariUITests; productName = BarabariUITests; productReference = A20000000000000000000009 /* BarabariUITests.xctest */; productType = "com.apple.product-type.bundle.ui-testing"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 /* Project object */ = {isa = PBXProject; attributes = { BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 2660; LastUpgradeCheck = 2660; TargetAttributes = { A50000000000000000000001 = { CreatedOnToolsVersion = 26.6; }; A50000000000000000000002 = { CreatedOnToolsVersion = 26.6; TestTargetID = A50000000000000000000001; }; A50000000000000000000003 = { CreatedOnToolsVersion = 26.6; TestTargetID = A50000000000000000000001; }; }; }; buildConfigurationList = A60000000000000000000004 /* Build configuration list for PBXProject "Barabari" */; compatibilityVersion = "Xcode 16.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = A40000000000000000000001; productRefGroup = A40000000000000000000007 /* Products */; projectDirPath = ""; projectRoot = ""; targets = (A50000000000000000000001 /* Barabari */, A50000000000000000000002 /* BarabariTests */, A50000000000000000000003 /* BarabariUITests */); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A80000000000000000000001 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A80000000000000000000002 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A80000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A70000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001 /* BarabariApp.swift in Sources */, A10000000000000000000002 /* AppEnvironment.swift in Sources */, A10000000000000000000003 /* ContentView.swift in Sources */, A10000000000000000000004 /* DemoModels.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		A70000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005 /* BarabariLaunchTests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		A70000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000006 /* BarabariUITests.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A90000000000000000000001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = A50000000000000000000001 /* Barabari */; targetProxy = AA00000000000000000000001 /* PBXContainerItemProxy */; };
+		A90000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = A50000000000000000000001 /* Barabari */; targetProxy = AA00000000000000000000002 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		AA00000000000000000000001 /* PBXContainerItemProxy */ = {isa = PBXContainerItemProxy; containerPortal = A00000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = A50000000000000000000001; remoteInfo = Barabari; };
+		AA00000000000000000000002 /* PBXContainerItemProxy */ = {isa = PBXContainerItemProxy; containerPortal = A00000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = A50000000000000000000001; remoteInfo = Barabari; };
+/* End PBXContainerItemProxy section */
+
+/* Begin XCBuildConfiguration section */
+		AB00000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = AC00000000000000000000001 /* Debug.xcconfig */; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_C_LANGUAGE_STANDARD = gnu17; GCC_DYNAMIC_NO_PIC = NO; GCC_OPTIMIZATION_LEVEL = 0; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0; }; name = Debug; };
+		AB00000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; GCC_C_LANGUAGE_STANDARD = gnu17; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_VERSION = 5.0; }; name = Release; };
+		AB00000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; baseConfigurationReference = AC00000000000000000000001 /* Debug.xcconfig */; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = ""; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Barabari; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.Barabari; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+		AB00000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = ""; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Barabari; INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.Barabari; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+		AB00000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.BarabariTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Barabari.app/Barabari"; }; name = Debug; };
+		AB00000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.BarabariTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Barabari.app/Barabari"; }; name = Release; };
+		AB00000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.BarabariUITests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; TEST_TARGET_NAME = Barabari; }; name = Debug; };
+		AB00000000000000000000008 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.BarabariUITests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TEST_TARGET_NAME = Barabari; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A60000000000000000000001 /* Build configuration list for PBXNativeTarget "Barabari" */ = {isa = XCConfigurationList; buildConfigurations = (AB00000000000000000000003 /* Debug */, AB00000000000000000000004 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A60000000000000000000002 /* Build configuration list for PBXNativeTarget "BarabariTests" */ = {isa = XCConfigurationList; buildConfigurations = (AB00000000000000000000005 /* Debug */, AB00000000000000000000006 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A60000000000000000000003 /* Build configuration list for PBXNativeTarget "BarabariUITests" */ = {isa = XCConfigurationList; buildConfigurations = (AB00000000000000000000007 /* Debug */, AB00000000000000000000008 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A60000000000000000000004 /* Build configuration list for PBXProject "Barabari" */ = {isa = XCConfigurationList; buildConfigurations = (AB00000000000000000000001 /* Debug */, AB00000000000000000000002 /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+
+/* Begin XCFileReference section */
+		AC00000000000000000000001 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Barabari/Config/Debug.xcconfig; sourceTree = SOURCE_ROOT; };
+/* End XCFileReference section */
+	};
+	rootObject = A00000000000000000000001 /* Project object */;
+}
