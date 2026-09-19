@@ -38,7 +38,7 @@ struct BarabariTabBar: View {
     }
 
     var body: some View {
-        Group {
+        SwiftUI.Group {
             if #available(iOS 26, *) {
                 GlassEffectContainer(spacing: BarabariSpacing.compact) {
                     tabItems
