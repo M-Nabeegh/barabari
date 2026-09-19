@@ -7,10 +7,20 @@ final class DesignSystemTests: XCTestCase {
         XCTAssertEqual(BarabariSpacing.section, 26)
     }
 
-    func testAmountFormatterUsesPKR() {
-        let value = AmountFormatter.string(minorUnits: 325_000, currencyCode: "PKR")
+    func testAmountFormatterConvertsPaisaAndGroupsPKR() {
+        XCTAssertEqual(
+            AmountFormatter.string(minorUnits: 325_050, currencyCode: "PKR"),
+            "PKR\u{00A0}3,250.5"
+        )
+    }
 
-        XCTAssertTrue(value.contains("PKR") || value.contains("Rs"))
+    func testAmountFormatterFormatsZeroAndNegativePKRAmounts() {
+        XCTAssertEqual(AmountFormatter.string(minorUnits: 0, currencyCode: "PKR"), "PKR\u{00A0}0")
+        XCTAssertEqual(AmountFormatter.string(minorUnits: -12_345, currencyCode: "PKR"), "-PKR\u{00A0}123.45")
+    }
+
+    func testAmountFormatterPreservesNonPKRCurrencyCode() {
+        XCTAssertEqual(AmountFormatter.string(minorUnits: 123_456, currencyCode: "USD"), "USD\u{00A0}1,234.56")
     }
 
     func testTabBarDefinesAllPrimaryTabs() {
