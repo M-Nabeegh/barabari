@@ -100,4 +100,30 @@ final class AddExpenseViewModelTests: XCTestCase {
             [environment.currentUserID: 50_000, friendID: 75_000]
         )
     }
+
+    func testMalformedExactShareCannotSaveOrPersistAnExpense() async throws {
+        let environment = AppEnvironment(inMemory: true, seedDemoData: true)
+        let group = try await environment.groupRepository.listGroups().first!
+        let friendID = UUID(uuidString: "A1D2E3F4-5A6B-4C7D-8E9F-001122334455")!
+        try await environment.groupRepository.upsertMember(
+            GroupMember(groupID: group.id, userID: friendID, role: .member)
+        )
+
+        let viewModel = AddExpenseViewModel(environment: environment)
+        await viewModel.load()
+        viewModel.amountText = "1250"
+        viewModel.title = "Groceries"
+        viewModel.participantIDs = [environment.currentUserID, friendID]
+        viewModel.selectSplit(.exact)
+        viewModel.updateExactAmount("500", for: environment.currentUserID)
+        viewModel.updateExactAmount("1..2", for: friendID)
+
+        let didSave = await viewModel.save()
+        let page = try await environment.expenseRepository.listExpenses(groupID: group.id, cursor: nil)
+
+        XCTAssertFalse(didSave)
+        XCTAssertNil(viewModel.savedExpense)
+        XCTAssertEqual(viewModel.validationMessage, "Enter a valid amount for each person.")
+        XCTAssertTrue(page.items.isEmpty)
+    }
 }

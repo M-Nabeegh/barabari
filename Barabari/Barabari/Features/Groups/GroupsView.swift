@@ -31,14 +31,15 @@ struct GroupsView: View {
         .refreshable { await viewModel.refresh() }
         .sheet(isPresented: $isPresentingCreateGroup) {
             CreateGroupSheet { name, description in
-                Task {
-                    if let group = await viewModel.createGroup(name: name, description: description) {
-                        BarabariInteraction.trigger(.success)
-                        onChanged()
-                        isPresentingCreateGroup = false
-                        selectGroup(group)
-                    }
+                guard let group = await viewModel.createGroup(name: name, description: description) else {
+                    return viewModel.creationError ?? "We could not create this group. Try again."
                 }
+
+                BarabariInteraction.trigger(.success)
+                onChanged()
+                isPresentingCreateGroup = false
+                selectGroup(group)
+                return nil
             }
         }
     }
@@ -160,8 +161,10 @@ private struct CreateGroupSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var description = ""
+    @State private var isSaving = false
+    @State private var errorMessage: String?
 
-    let save: (String, String?) -> Void
+    let save: (String, String?) async -> String?
 
     var body: some View {
         NavigationStack {
@@ -173,6 +176,15 @@ private struct CreateGroupSheet: View {
                     TextField("Optional description", text: $description, axis: .vertical)
                         .lineLimit(2...4)
                 }
+
+                if let errorMessage {
+                    Section {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                            .font(BarabariTypography.metadata)
+                            .foregroundStyle(BarabariColors.danger)
+                            .accessibilityIdentifier("create-group-error")
+                    }
+                }
             }
             .navigationTitle("New group")
             .toolbar {
@@ -181,11 +193,22 @@ private struct CreateGroupSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
+                        guard !isSaving else { return }
                         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
                         let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
-                        save(trimmedName, trimmedDescription.isEmpty ? nil : trimmedDescription)
+                        isSaving = true
+                        errorMessage = nil
+                        Task { @MainActor in
+                            if let failure = await save(trimmedName, trimmedDescription.isEmpty ? nil : trimmedDescription) {
+                                isSaving = false
+                                errorMessage = failure
+                            } else {
+                                dismiss()
+                            }
+                        }
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityIdentifier("create-group-button")
+                    .disabled(isSaving || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }

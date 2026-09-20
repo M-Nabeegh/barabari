@@ -1,6 +1,24 @@
 import Foundation
 import SwiftData
 
+private enum LocalActivityCursorCodec {
+    static func decode(_ value: String?) throws -> LocalLedgerCursor? {
+        guard let value else { return nil }
+        guard let data = Data(base64Encoded: value),
+              let cursor = try? JSONDecoder().decode(LocalLedgerCursor.self, from: data) else {
+            throw LocalPersistenceError.invalidCursor
+        }
+        return cursor
+    }
+
+    static func encode(_ cursor: LocalLedgerCursor) -> String {
+        guard let data = try? JSONEncoder().encode(cursor) else {
+            preconditionFailure("A keyset cursor made only of a Date and UUID must be encodable.")
+        }
+        return data.base64EncodedString()
+    }
+}
+
 final actor LocalGroupRepository: GroupRepository {
     private let container: ModelContainer
 
@@ -14,6 +32,49 @@ final actor LocalGroupRepository: GroupRepository {
             .filter { $0.deletedAt == nil }
             .map(\.asDomain)
             .sorted(by: sortGroups)
+    }
+
+    func listActivities(limit: Int, cursor: String?) throws -> Page<ActivityEvent> {
+        let requestedLimit = max(limit, 1)
+        let boundary = try LocalActivityCursorCodec.decode(cursor)
+        let predicate: Predicate<StoredActivityEvent>
+
+        if let boundary {
+            let boundaryDate = boundary.occurredAt
+            let boundaryID = boundary.id
+            predicate = #Predicate<StoredActivityEvent> { event in
+                event.deletedAt == nil && (
+                    event.occurredAt < boundaryDate ||
+                    (event.occurredAt == boundaryDate && event.id > boundaryID)
+                )
+            }
+        } else {
+            predicate = #Predicate<StoredActivityEvent> { event in
+                event.deletedAt == nil
+            }
+        }
+
+        let context = ModelContext(container)
+        var descriptor = FetchDescriptor<StoredActivityEvent>(
+            predicate: predicate,
+            sortBy: [
+                SortDescriptor(\.occurredAt, order: .reverse),
+                SortDescriptor(\.id, order: .forward)
+            ]
+        )
+        descriptor.fetchLimit = requestedLimit == Int.max ? Int.max : requestedLimit + 1
+
+        let events = try context.fetch(descriptor).map(\.asDomain)
+        let pageItems = Array(events.prefix(requestedLimit))
+        let nextCursor: String?
+        if events.count > pageItems.count, let last = pageItems.last {
+            nextCursor = LocalActivityCursorCodec.encode(
+                LocalLedgerCursor(occurredAt: last.occurredAt, id: last.id)
+            )
+        } else {
+            nextCursor = nil
+        }
+        return Page(items: pageItems, nextCursor: nextCursor)
     }
 
     func createGroup(name: String, description: String?, ownerID: UUID) throws -> Group {

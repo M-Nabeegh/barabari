@@ -12,7 +12,7 @@ struct ExpenseDetailView: View {
                 currencyCode: expense.total.currencyCode,
                 style: .hero
             )
-            Text("Saved to this iPhone. It will be ready to sync when your group connects.")
+            Text("Saved locally on this iPhone. This demo does not sync to a server.")
                 .font(BarabariTypography.body)
                 .foregroundStyle(BarabariColors.textSecondary)
         }

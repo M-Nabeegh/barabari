@@ -16,4 +16,47 @@ final class AppEnvironmentTests: XCTestCase {
         }
         XCTAssertTrue(events.allSatisfy { $0.groupID == group.id })
     }
+
+    func testGroupsViewModelIgnoresRepeatedCreateRequestsWhileFirstSaveIsInFlight() async throws {
+        let environment = AppEnvironment(inMemory: true)
+        let saveStarted = AsyncTestLatch()
+        let viewModel = GroupsViewModel(environment: environment) { name, description, ownerID in
+            await saveStarted.signal()
+            try await Task.sleep(nanoseconds: 100_000_000)
+            return try await environment.groupRepository.createGroup(
+                name: name,
+                description: description,
+                ownerID: ownerID
+            )
+        }
+
+        let firstRequest = Task { await viewModel.createGroup(name: "Trip", description: nil) }
+        await saveStarted.wait()
+        let repeatedRequest = await viewModel.createGroup(name: "Duplicate", description: nil)
+        let firstResult = await firstRequest.value
+
+        XCTAssertNotNil(firstResult)
+        XCTAssertNil(repeatedRequest)
+        XCTAssertFalse(viewModel.isCreating)
+        let storedGroups = try await environment.groupRepository.listGroups()
+        XCTAssertEqual(storedGroups.count, 1)
+    }
+}
+
+private actor AsyncTestLatch {
+    private var signaled = false
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    func wait() async {
+        guard !signaled else { return }
+        await withCheckedContinuation { continuation in
+            self.continuation = continuation
+        }
+    }
+
+    func signal() {
+        signaled = true
+        continuation?.resume()
+        continuation = nil
+    }
 }

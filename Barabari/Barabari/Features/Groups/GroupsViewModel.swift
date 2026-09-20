@@ -13,11 +13,24 @@ enum GroupsState: Equatable {
 final class GroupsViewModel: ObservableObject {
     @Published private(set) var groups: [Group] = []
     @Published private(set) var state: GroupsState = .loading
+    @Published private(set) var isCreating = false
+    @Published private(set) var creationError: String?
 
     private let environment: AppEnvironment
+    private let createGroupOperation: (String, String?, UUID) async throws -> Group
 
-    init(environment: AppEnvironment) {
+    init(
+        environment: AppEnvironment,
+        createGroupOperation: ((String, String?, UUID) async throws -> Group)? = nil
+    ) {
         self.environment = environment
+        self.createGroupOperation = createGroupOperation ?? { name, description, ownerID in
+            try await CreateGroup(repository: environment.groupRepository).call(
+                name: name,
+                description: description,
+                ownerID: ownerID
+            )
+        }
     }
 
     func load() async {
@@ -31,17 +44,19 @@ final class GroupsViewModel: ObservableObject {
 
     @discardableResult
     func createGroup(name: String, description: String?) async -> Group? {
+        guard !isCreating else { return nil }
+
+        isCreating = true
+        creationError = nil
+        defer { isCreating = false }
+
         do {
-            let group = try await CreateGroup(repository: environment.groupRepository).call(
-                name: name,
-                description: description,
-                ownerID: environment.currentUserID
-            )
+            let group = try await createGroupOperation(name, description, environment.currentUserID)
             groups.insert(group, at: 0)
             state = environment.isOffline ? .offline : .loaded
             return group
         } catch {
-            state = .failed(error.localizedDescription)
+            creationError = error.localizedDescription
             return nil
         }
     }

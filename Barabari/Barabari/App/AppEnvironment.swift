@@ -54,6 +54,10 @@ struct AppEnvironment {
         try await groupRepository.recentActivities(limit: limit)
     }
 
+    func activityPage(limit: Int, cursor: String?) async throws -> Page<ActivityEvent> {
+        try await groupRepository.listActivities(limit: limit, cursor: cursor)
+    }
+
     func activity(groupID: UUID) async throws -> [ActivityEvent] {
         try await groupRepository.activities(groupID: groupID)
     }

@@ -189,7 +189,13 @@ final class AddExpenseViewModel: ObservableObject {
         let money = try parseMoney(amountText)
         let normalizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedTitle.isEmpty else { throw LedgerValidationError.emptyExpenseTitle }
-        let method = splitMethodForCurrentInputs()
+        let method: SplitMethod
+        switch splitSelection {
+        case .equal:
+            method = .equal
+        case .exact:
+            method = .exact(try exactAmountsForCurrentInputs())
+        }
         splitMethod = method
         return ExpenseDraft(
             groupID: groupID,
@@ -216,6 +222,17 @@ final class AddExpenseViewModel: ObservableObject {
         }
     }
 
+    private func exactAmountsForCurrentInputs() throws -> [UUID: Int64] {
+        do {
+            return try Dictionary(uniqueKeysWithValues: participantIDs.map { participantID in
+                let amount = try parseMoney(exactAmountTexts[participantID] ?? "", allowsZero: true)
+                return (participantID, amount.minorUnits)
+            })
+        } catch {
+            throw AddExpenseValidationError.invalidExactAmount
+        }
+    }
+
     private func refreshPreview() {
         splitMethod = splitMethodForCurrentInputs()
         guard let money = try? parseMoney(amountText), !participantIDs.isEmpty,
@@ -226,7 +243,7 @@ final class AddExpenseViewModel: ObservableObject {
         previewSplits = splits
     }
 
-    private func parseMoney(_ input: String) throws -> Money {
+    private func parseMoney(_ input: String, allowsZero: Bool = false) throws -> Money {
         let normalized = input.trimmingCharacters(in: .whitespacesAndNewlines)
         let components = normalized.split(separator: ".", omittingEmptySubsequences: false)
         guard components.count <= 2,
@@ -241,7 +258,9 @@ final class AddExpenseViewModel: ObservableObject {
         let (wholeInPaisa, overflow) = whole.multipliedReportingOverflow(by: 100)
         guard !overflow else { throw AddExpenseValidationError.invalidAmount }
         let (minorUnits, additionOverflow) = wholeInPaisa.addingReportingOverflow(fraction)
-        guard !additionOverflow, minorUnits > 0 else { throw AddExpenseValidationError.invalidAmount }
+        guard !additionOverflow, allowsZero ? minorUnits >= 0 : minorUnits > 0 else {
+            throw AddExpenseValidationError.invalidAmount
+        }
         return Money(minorUnits: minorUnits, currencyCode: "PKR")
     }
 
@@ -267,6 +286,8 @@ final class AddExpenseViewModel: ObservableObject {
         switch error {
         case AddExpenseValidationError.invalidAmount, LedgerValidationError.nonPositiveAmount:
             return "Enter an amount greater than PKR 0."
+        case AddExpenseValidationError.invalidExactAmount:
+            return "Enter a valid amount for each person."
         case LedgerValidationError.emptyExpenseTitle:
             return "Add a short title for this expense."
         case AddExpenseValidationError.noGroup:
@@ -292,6 +313,7 @@ final class AddExpenseViewModel: ObservableObject {
 
 private enum AddExpenseValidationError: Error {
     case invalidAmount
+    case invalidExactAmount
     case noGroup
     case noPayer
 }

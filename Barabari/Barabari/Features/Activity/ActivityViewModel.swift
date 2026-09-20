@@ -26,8 +26,13 @@ final class ActivityViewModel: ObservableObject {
 
     private let environment: AppEnvironment
     private let pageSize: Int
-    private var allEvents: [ActivityEvent] = []
-    private var nextOffset = 0
+    private var nextCursor: String?
+    private var expenseCacheByGroup: [UUID: [UUID: Expense]] = [:]
+    private var settlementCacheByGroup: [UUID: [UUID: Settlement]] = [:]
+    private var expenseCursorByGroup: [UUID: String?] = [:]
+    private var settlementCursorByGroup: [UUID: String?] = [:]
+    private var exhaustedExpenseGroups = Set<UUID>()
+    private var exhaustedSettlementGroups = Set<UUID>()
     private var isLoading = false
 
     init(environment: AppEnvironment, pageSize: Int = 20) {
@@ -40,20 +45,17 @@ final class ActivityViewModel: ObservableObject {
         isLoading = true
         state = .loading
         rows = []
-        allEvents = []
-        nextOffset = 0
+        nextCursor = nil
+        expenseCacheByGroup = [:]
+        settlementCacheByGroup = [:]
+        expenseCursorByGroup = [:]
+        settlementCursorByGroup = [:]
+        exhaustedExpenseGroups = []
+        exhaustedSettlementGroups = []
         hasMore = false
         defer { isLoading = false }
 
         do {
-            let groups = try await environment.groupRepository.listGroups()
-            for group in groups {
-                try Task.checkCancellation()
-                allEvents += try await environment.activity(groupID: group.id)
-            }
-            allEvents = allEvents
-                .filter { $0.deletedAt == nil }
-                .sorted(by: Self.sortEvents)
             await appendNextPage()
             if !Task.isCancelled, rows.isEmpty {
                 state = .empty
@@ -74,28 +76,24 @@ final class ActivityViewModel: ObservableObject {
     }
 
     private func appendNextPage() async {
-        guard !isLoadingNextPage, nextOffset < allEvents.count else {
-            hasMore = nextOffset < allEvents.count
-            return
-        }
+        guard !isLoadingNextPage else { return }
 
         isLoadingNextPage = true
         defer { isLoadingNextPage = false }
 
-        let endOffset = min(nextOffset + pageSize, allEvents.count)
-        let pageEvents = Array(allEvents[nextOffset..<endOffset])
         do {
-            let related = try await relatedRecords(for: pageEvents)
+            let page = try await environment.activityPage(limit: pageSize, cursor: nextCursor)
+            let related = try await relatedRecords(for: page.items)
             guard !Task.isCancelled else { return }
-            rows.append(contentsOf: pageEvents.map {
+            rows.append(contentsOf: page.items.map {
                 ActivityRow(
                     event: $0,
                     expense: related.expenses[$0.subjectID],
                     settlement: related.settlements[$0.subjectID]
                 )
             })
-            nextOffset = endOffset
-            hasMore = nextOffset < allEvents.count
+            nextCursor = page.nextCursor
+            hasMore = page.nextCursor != nil
             state = rows.isEmpty ? .empty : .loaded
         } catch is CancellationError {
             return
@@ -114,37 +112,72 @@ final class ActivityViewModel: ObservableObject {
 
         var expenses: [UUID: Expense] = [:]
         for (groupID, ids) in expenseIDsByGroup where !ids.isEmpty {
-            var cursor: String?
-            repeat {
-                try Task.checkCancellation()
-                let page = try await environment.expenseRepository.listExpenses(groupID: groupID, cursor: cursor)
-                for expense in page.items where ids.contains(expense.id) {
-                    expenses[expense.id] = expense
-                }
-                if Set(expenses.keys).isSuperset(of: ids) { break }
-                cursor = page.nextCursor
-            } while cursor != nil
+            let records = try await loadExpenses(ids: ids, groupID: groupID)
+            expenses.merge(records) { _, latest in latest }
         }
 
         var settlements: [UUID: Settlement] = [:]
         for (groupID, ids) in settlementIDsByGroup where !ids.isEmpty {
-            var cursor: String?
-            repeat {
-                try Task.checkCancellation()
-                let page = try await environment.settlementRepository.listSettlements(groupID: groupID, cursor: cursor)
-                for settlement in page.items where ids.contains(settlement.id) {
-                    settlements[settlement.id] = settlement
-                }
-                if Set(settlements.keys).isSuperset(of: ids) { break }
-                cursor = page.nextCursor
-            } while cursor != nil
+            let records = try await loadSettlements(ids: ids, groupID: groupID)
+            settlements.merge(records) { _, latest in latest }
         }
 
         return (expenses, settlements)
     }
 
-    private static func sortEvents(_ lhs: ActivityEvent, _ rhs: ActivityEvent) -> Bool {
-        if lhs.occurredAt != rhs.occurredAt { return lhs.occurredAt > rhs.occurredAt }
-        return lhs.id.uuidString < rhs.id.uuidString
+    private func loadExpenses(ids: Set<UUID>, groupID: UUID) async throws -> [UUID: Expense] {
+        var cache = expenseCacheByGroup[groupID, default: [:]]
+        guard !ids.allSatisfy({ cache[$0] != nil }), !exhaustedExpenseGroups.contains(groupID) else {
+            return cache.filter { ids.contains($0.key) }
+        }
+
+        var cursor = expenseCursorByGroup[groupID] ?? nil
+        repeat {
+            try Task.checkCancellation()
+            let page = try await environment.expenseRepository.listExpenses(groupID: groupID, cursor: cursor)
+            for expense in page.items {
+                cache[expense.id] = expense
+            }
+            cursor = page.nextCursor
+            if ids.allSatisfy({ cache[$0] != nil }) {
+                break
+            }
+            if cursor == nil {
+                exhaustedExpenseGroups.insert(groupID)
+                break
+            }
+        } while true
+
+        expenseCacheByGroup[groupID] = cache
+        expenseCursorByGroup[groupID] = cursor
+        return cache.filter { ids.contains($0.key) }
+    }
+
+    private func loadSettlements(ids: Set<UUID>, groupID: UUID) async throws -> [UUID: Settlement] {
+        var cache = settlementCacheByGroup[groupID, default: [:]]
+        guard !ids.allSatisfy({ cache[$0] != nil }), !exhaustedSettlementGroups.contains(groupID) else {
+            return cache.filter { ids.contains($0.key) }
+        }
+
+        var cursor = settlementCursorByGroup[groupID] ?? nil
+        repeat {
+            try Task.checkCancellation()
+            let page = try await environment.settlementRepository.listSettlements(groupID: groupID, cursor: cursor)
+            for settlement in page.items {
+                cache[settlement.id] = settlement
+            }
+            cursor = page.nextCursor
+            if ids.allSatisfy({ cache[$0] != nil }) {
+                break
+            }
+            if cursor == nil {
+                exhaustedSettlementGroups.insert(groupID)
+                break
+            }
+        } while true
+
+        settlementCacheByGroup[groupID] = cache
+        settlementCursorByGroup[groupID] = cursor
+        return cache.filter { ids.contains($0.key) }
     }
 }
