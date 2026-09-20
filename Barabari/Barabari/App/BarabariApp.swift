@@ -11,7 +11,8 @@ struct BarabariApp: App {
             environment = AppEnvironment(
                 inMemory: true,
                 seedDemoData: true,
-                seedDemoSecondMember: arguments.contains("-uiTestingSecondMember")
+                seedDemoSecondMember: arguments.contains("-uiTestingSecondMember"),
+                seedDemoDebt: arguments.contains("-uiTestingDebtState")
             )
         } else if arguments.contains("-uiTestingEmptyState") {
             environment = AppEnvironment(inMemory: true)

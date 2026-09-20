@@ -52,32 +52,9 @@ struct RootView: View {
         case .addExpense:
             AddExpenseView(environment: environment)
         case .activity:
-            FeaturePlaceholderView(
-                title: "Activity",
-                symbol: "clock.fill",
-                message: "Your group activity will appear here."
-            )
+            ActivityView(environment: environment)
         case .settings:
-            FeaturePlaceholderView(
-                title: "Settings",
-                symbol: "gearshape.fill",
-                message: "Your Barabari preferences will appear here."
-            )
+            SettingsView()
         }
-    }
-}
-
-private struct FeaturePlaceholderView: View {
-    let title: String
-    let symbol: String
-    let message: String
-
-    var body: some View {
-        ContentUnavailableView {
-            Label(title, systemImage: symbol)
-        } description: {
-            Text(message)
-        }
-        .navigationTitle(title)
     }
 }

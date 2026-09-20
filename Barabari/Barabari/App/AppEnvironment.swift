@@ -23,13 +23,18 @@ struct AppEnvironment {
         inMemory: Bool,
         seedDemoData: Bool = false,
         seedDemoSecondMember: Bool = false,
+        seedDemoDebt: Bool = false,
         currentUserID: UUID = barabariDefaultUserID,
         isOffline: Bool = false
     ) {
         do {
             let container = try BarabariModelContainer.make(inMemory: inMemory)
             if seedDemoData {
-                try BarabariModelContainer.seedDemoData(in: container, includeSecondMember: seedDemoSecondMember)
+                try BarabariModelContainer.seedDemoData(
+                    in: container,
+                    includeSecondMember: seedDemoSecondMember,
+                    includeDemoDebt: seedDemoDebt
+                )
             }
             modelContainer = container
             groupRepository = LocalGroupRepository(container: container)

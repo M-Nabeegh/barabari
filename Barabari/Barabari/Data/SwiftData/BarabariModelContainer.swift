@@ -23,7 +23,11 @@ enum BarabariModelContainer {
         return container
     }
 
-    static func seedDemoData(in container: ModelContainer, includeSecondMember: Bool = false) throws {
+    static func seedDemoData(
+        in container: ModelContainer,
+        includeSecondMember: Bool = false,
+        includeDemoDebt: Bool = false
+    ) throws {
         let context = ModelContext(container)
         guard try context.fetch(FetchDescriptor<StoredGroup>()).isEmpty else { return }
 
@@ -63,10 +67,41 @@ enum BarabariModelContainer {
         )
         context.insert(StoredGroup(group: group))
         context.insert(StoredGroupMember(member: member))
-        if includeSecondMember {
+        if includeSecondMember || includeDemoDebt {
             context.insert(StoredGroupMember(member: secondMember))
         }
         context.insert(StoredActivityEvent(event: event))
+        if includeDemoDebt {
+            let expense = Expense(
+                id: UUID(uuidString: "0D443B4D-ED4E-4FEE-87AF-A17681A1E3E6")!,
+                groupID: group.id,
+                title: "Demo dinner",
+                note: "A seeded local debt for settlement testing",
+                total: Money(minorUnits: 200_000, currencyCode: "PKR"),
+                paidByUserID: secondMember.userID,
+                splits: [
+                    ExpenseSplit(userID: ownerID, amount: Money(minorUnits: 100_000, currencyCode: "PKR")),
+                    ExpenseSplit(userID: secondMember.userID, amount: Money(minorUnits: 100_000, currencyCode: "PKR"))
+                ],
+                splitMethod: .equal,
+                occurredAt: demoDate.addingTimeInterval(60),
+                createdByUserID: secondMember.userID,
+                createdAt: demoDate.addingTimeInterval(60),
+                updatedAt: demoDate.addingTimeInterval(60)
+            )
+            context.insert(try StoredExpense(expense: expense))
+            for split in expense.splits {
+                context.insert(StoredExpenseSplit(expenseID: expense.id, split: split))
+            }
+            context.insert(StoredActivityEvent(event: ActivityEvent(
+                groupID: group.id,
+                actorUserID: secondMember.userID,
+                kind: .expenseCreated,
+                subjectID: expense.id,
+                occurredAt: expense.occurredAt,
+                createdAt: expense.createdAt
+            )))
+        }
         try context.save()
     }
 }

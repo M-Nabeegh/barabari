@@ -1,9 +1,14 @@
 import SwiftUI
 
 struct GroupDetailView: View {
+    private let environment: AppEnvironment
     @StateObject private var viewModel: GroupDetailViewModel
+    @State private var selectedTransfer: BalanceTransfer?
+    @State private var selectedGroupID: UUID?
+    @State private var isPresentingSettlement = false
 
     init(environment: AppEnvironment, groupID: UUID) {
+        self.environment = environment
         _viewModel = StateObject(wrappedValue: GroupDetailViewModel(environment: environment, groupID: groupID))
     }
 
@@ -28,6 +33,18 @@ struct GroupDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.load() }
         .refreshable { await viewModel.refresh() }
+        .navigationDestination(isPresented: $isPresentingSettlement) {
+            if let transfer = selectedTransfer, let selectedGroupID {
+                SettlementView(
+                    environment: environment,
+                    groupID: selectedGroupID,
+                    fromUserID: transfer.fromUserID,
+                    toUserID: transfer.toUserID,
+                    remainingAmount: transfer.amount,
+                    recipient: memberName(for: transfer.toUserID)
+                )
+            }
+        }
     }
 
     private var groupTitle: String {
@@ -56,6 +73,12 @@ struct GroupDetailView: View {
                         .font(BarabariTypography.body)
                         .foregroundStyle(BarabariColors.textSecondary)
                 }
+            }
+
+            BalanceSummaryView(summary: snapshot.balance, currentUserID: snapshot.currentUserID) { transfer in
+                selectedTransfer = transfer
+                selectedGroupID = snapshot.group.id
+                isPresentingSettlement = true
             }
 
             VStack(alignment: .leading, spacing: BarabariSpacing.row) {
@@ -108,6 +131,17 @@ struct GroupDetailView: View {
     private func balanceHeadline(for balance: BalanceSummary) -> String {
         if balance.transfers.isEmpty { return "Everyone is settled up." }
         return "\(balance.transfers.count) settlement\(balance.transfers.count == 1 ? "" : "s") to review."
+    }
+
+    private func memberName(for userID: UUID) -> String {
+        switch viewModel.state {
+        case let .loaded(snapshot), let .offline(snapshot):
+            if userID == snapshot.currentUserID { return "You" }
+            let index = snapshot.members.firstIndex { $0.userID == userID } ?? 0
+            return "Member \(index + 1)"
+        case .loading, .failed:
+            return "Group member"
+        }
     }
 
     private func eventTitle(_ kind: ActivityEventKind) -> String {
