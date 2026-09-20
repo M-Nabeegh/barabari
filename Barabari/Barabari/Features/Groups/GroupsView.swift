@@ -2,6 +2,8 @@ import SwiftUI
 
 struct GroupsView: View {
     @ObservedObject var viewModel: GroupsViewModel
+    let revision: Int
+    let onChanged: () -> Void
     let selectGroup: (Group) -> Void
 
     @State private var isPresentingCreateGroup = false
@@ -26,12 +28,13 @@ struct GroupsView: View {
         }
         .navigationTitle("Groups")
         .navigationBarTitleDisplayMode(.large)
-        .task { await viewModel.load() }
+        .task(id: revision) { await viewModel.refresh() }
         .refreshable { await viewModel.refresh() }
         .sheet(isPresented: $isPresentingCreateGroup) {
             CreateGroupSheet { name, description in
                 Task {
                     if let group = await viewModel.createGroup(name: name, description: description) {
+                        onChanged()
                         isPresentingCreateGroup = false
                         selectGroup(group)
                     }

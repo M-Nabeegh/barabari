@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettlementView: View {
     @StateObject private var viewModel: SettlementViewModel
+    private let onSaved: () -> Void
     @FocusState private var isAmountFocused: Bool
 
     init(
@@ -10,8 +11,10 @@ struct SettlementView: View {
         fromUserID: UUID,
         toUserID: UUID,
         remainingAmount: Money,
-        recipient: String
+        recipient: String,
+        onSaved: @escaping () -> Void = {}
     ) {
+        self.onSaved = onSaved
         _viewModel = StateObject(wrappedValue: SettlementViewModel(
             environment: environment,
             groupID: groupID,
@@ -37,6 +40,10 @@ struct SettlementView: View {
         .background(BarabariColors.background)
         .navigationTitle("Settle up")
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: viewModel.savedSettlement?.id) { _, savedID in
+            guard savedID != nil else { return }
+            onSaved()
+        }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()

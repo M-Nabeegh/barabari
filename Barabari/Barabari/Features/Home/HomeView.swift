@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
+    let revision: Int
     let showGroups: () -> Void
 
     var body: some View {
@@ -25,7 +26,7 @@ struct HomeView: View {
         }
         .navigationTitle("Barabari")
         .navigationBarTitleDisplayMode(.large)
-        .task { await viewModel.load() }
+        .task(id: revision) { await viewModel.refresh() }
         .refreshable { await viewModel.refresh() }
     }
 

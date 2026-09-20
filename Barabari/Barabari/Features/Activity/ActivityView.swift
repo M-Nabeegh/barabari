@@ -17,6 +17,7 @@ private enum ActivityLoadingState {
 
 struct ActivityView: View {
     let environment: AppEnvironment
+    let revision: Int
 
     @State private var state: ActivityLoadingState = .loading
 
@@ -58,7 +59,7 @@ struct ActivityView: View {
         .background(BarabariColors.background)
         .navigationTitle("Activity")
         .navigationBarTitleDisplayMode(.large)
-        .task { await load() }
+        .task(id: revision) { await load() }
         .refreshable { await load() }
     }
 

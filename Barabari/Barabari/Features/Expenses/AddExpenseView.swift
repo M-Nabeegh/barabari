@@ -13,11 +13,13 @@ enum AddExpenseScrollAnchor: Hashable {
 
 struct AddExpenseView: View {
 
-    @StateObject private var viewModel: AddExpenseViewModel
+    @ObservedObject private var viewModel: AddExpenseViewModel
+    private let session: LedgerSession
     @FocusState private var focusedField: AddExpenseFocusedField?
 
-    init(environment: AppEnvironment) {
-        _viewModel = StateObject(wrappedValue: AddExpenseViewModel(environment: environment))
+    init(viewModel: AddExpenseViewModel, session: LedgerSession) {
+        self.viewModel = viewModel
+        self.session = session
     }
 
     var body: some View {
@@ -140,7 +142,11 @@ struct AddExpenseView: View {
 
             Button {
                 focusedField = nil
-                Task { await viewModel.save() }
+                Task {
+                    if await viewModel.save() {
+                        session.markChanged()
+                    }
+                }
             } label: {
                 Text(viewModel.isSaving ? "Saving..." : "Save expense")
                     .font(.system(.body, design: .rounded, weight: .semibold))

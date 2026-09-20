@@ -112,8 +112,9 @@ final class AddExpenseViewModel: ObservableObject {
         savedExpense = nil
     }
 
-    func save() async {
-        guard !isSaving else { return }
+    @discardableResult
+    func save() async -> Bool {
+        guard !isSaving else { return false }
         validationMessage = nil
         savedExpense = nil
         isSaving = true
@@ -127,8 +128,10 @@ final class AddExpenseViewModel: ObservableObject {
             ).call(draft: draft, idempotencyKey: UUID())
             savedExpense = expense
             previewSplits = expense.splits
+            return true
         } catch {
             validationMessage = message(for: error)
+            return false
         }
     }
 

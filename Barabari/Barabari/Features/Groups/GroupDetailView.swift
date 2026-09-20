@@ -2,13 +2,17 @@ import SwiftUI
 
 struct GroupDetailView: View {
     private let environment: AppEnvironment
+    private let revision: Int
+    private let onChanged: () -> Void
     @StateObject private var viewModel: GroupDetailViewModel
     @State private var selectedTransfer: BalanceTransfer?
     @State private var selectedGroupID: UUID?
     @State private var isPresentingSettlement = false
 
-    init(environment: AppEnvironment, groupID: UUID) {
+    init(environment: AppEnvironment, groupID: UUID, revision: Int, onChanged: @escaping () -> Void) {
         self.environment = environment
+        self.revision = revision
+        self.onChanged = onChanged
         _viewModel = StateObject(wrappedValue: GroupDetailViewModel(environment: environment, groupID: groupID))
     }
 
@@ -31,7 +35,7 @@ struct GroupDetailView: View {
         }
         .navigationTitle(groupTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.load() }
+        .task(id: revision) { await viewModel.refresh() }
         .refreshable { await viewModel.refresh() }
         .onChange(of: isPresentingSettlement) { _, isPresenting in
             guard !isPresenting else { return }
@@ -45,7 +49,8 @@ struct GroupDetailView: View {
                     fromUserID: transfer.fromUserID,
                     toUserID: transfer.toUserID,
                     remainingAmount: transfer.amount,
-                    recipient: memberName(for: transfer.toUserID)
+                    recipient: memberName(for: transfer.toUserID),
+                    onSaved: onChanged
                 )
             }
         }
