@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct BarabariApp: App {
@@ -6,14 +7,12 @@ struct BarabariApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(environment: environment)
         }
         .modelContainer(environment.modelContainer)
     }
 }
 
 #Preview("Demo") {
-    ContentView()
-        .modelContainer(AppEnvironment.demo.modelContainer)
+    ContentView(environment: AppEnvironment.demo)
 }
-

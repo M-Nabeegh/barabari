@@ -8,7 +8,11 @@ enum BarabariModelContainer {
             schema: BarabariSchema.schema,
             isStoredInMemoryOnly: inMemory
         )
-        return try ModelContainer(for: BarabariSchema.schema, configurations: [configuration])
+        return try ModelContainer(
+            for: BarabariSchema.schema,
+            migrationPlan: BarabariMigrationPlan.self,
+            configurations: [configuration]
+        )
     }
 
     static func makeDemo() throws -> ModelContainer {

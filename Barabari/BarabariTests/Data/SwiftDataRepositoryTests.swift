@@ -109,4 +109,227 @@ final class SwiftDataRepositoryTests: XCTestCase {
         XCTAssertNotNil(tombstone?.deletedAt)
         XCTAssertEqual(tombstone?.revision, expense.revision + 1)
     }
+
+    // Catches offset pagination, which repeats or skips records when another expense is inserted between pages.
+    func testExpenseKeysetCursorStaysStableWhenRecordsChangeBetweenPages() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let repository = LocalExpenseRepository(container: container)
+        let groupID = UUID(uuidString: "00000000-0000-0000-0000-000000000111")!
+
+        for index in 0...50 {
+            let expense = makeExpense(
+                id: UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", 1_000 + index))!,
+                groupID: groupID,
+                occurredAt: Date(timeIntervalSince1970: 2_000 - Double(index))
+            )
+            _ = try await repository.saveExpense(expense, idempotencyKey: UUID())
+        }
+
+        let firstPage = try await repository.listExpenses(groupID: groupID, cursor: nil)
+        XCTAssertEqual(firstPage.items.count, 50)
+        XCTAssertNotNil(firstPage.nextCursor)
+
+        let insertedBetweenPages = makeExpense(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000009999")!,
+            groupID: groupID,
+            occurredAt: Date(timeIntervalSince1970: 1_949.5)
+        )
+        _ = try await repository.saveExpense(insertedBetweenPages, idempotencyKey: UUID())
+
+        let secondPage = try await repository.listExpenses(groupID: groupID, cursor: firstPage.nextCursor)
+        XCTAssertTrue(Set(firstPage.items.map(\.id)).isDisjoint(with: Set(secondPage.items.map(\.id))))
+        XCTAssertEqual(Set(secondPage.items.map(\.id)), Set([insertedBetweenPages.id, UUID(uuidString: "00000000-0000-0000-0000-000000001050")!]))
+    }
+
+    // Catches idempotency scoped only to a repository actor rather than the durable store.
+    func testExpenseIdempotencySurvivesNewRepositoryInstances() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let firstRepository = LocalExpenseRepository(container: container)
+        let secondRepository = LocalExpenseRepository(container: container)
+        let groupID = UUID(uuidString: "00000000-0000-0000-0000-000000000112")!
+        let commandID = UUID(uuidString: "00000000-0000-0000-0000-000000000113")!
+        let original = makeExpense(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000114")!,
+            groupID: groupID,
+            occurredAt: Date(timeIntervalSince1970: 1_000)
+        )
+        let duplicateCommandWithDifferentPayload = makeExpense(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000115")!,
+            groupID: groupID,
+            occurredAt: Date(timeIntervalSince1970: 999)
+        )
+
+        let firstResult = try await firstRepository.saveExpense(original, idempotencyKey: commandID)
+        let replayResult = try await secondRepository.saveExpense(duplicateCommandWithDifferentPayload, idempotencyKey: commandID)
+
+        XCTAssertEqual(firstResult, original)
+        XCTAssertEqual(replayResult, original)
+        let storedExpenseIDs = try await secondRepository.expensesForSync(groupID: groupID).map(\.id)
+        XCTAssertEqual(storedExpenseIDs, [original.id])
+    }
+
+    // Catches settlement replay behavior that diverges from expense replay behavior after a repository restart.
+    func testSettlementIdempotencySurvivesNewRepositoryInstances() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let firstRepository = LocalSettlementRepository(container: container)
+        let secondRepository = LocalSettlementRepository(container: container)
+        let groupID = UUID(uuidString: "00000000-0000-0000-0000-000000000118")!
+        let commandID = UUID(uuidString: "00000000-0000-0000-0000-000000000119")!
+        let original = makeSettlement(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000120")!,
+            groupID: groupID,
+            occurredAt: Date(timeIntervalSince1970: 1_000)
+        )
+        let replayPayload = makeSettlement(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000121")!,
+            groupID: groupID,
+            occurredAt: Date(timeIntervalSince1970: 999)
+        )
+
+        _ = try await firstRepository.saveSettlement(original, idempotencyKey: commandID)
+        let replayResult = try await secondRepository.saveSettlement(replayPayload, idempotencyKey: commandID)
+
+        XCTAssertEqual(replayResult, original)
+        let storedIDs = try await secondRepository.settlementsForSync(groupID: groupID).map(\.id)
+        XCTAssertEqual(storedIDs, [original.id])
+    }
+
+    // Catches a settlement cursor that is an array offset and therefore duplicates entries after a mutation.
+    func testSettlementKeysetCursorStaysStableWhenRecordsChangeBetweenPages() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let repository = LocalSettlementRepository(container: container)
+        let groupID = UUID(uuidString: "00000000-0000-0000-0000-000000000122")!
+
+        for index in 0...50 {
+            let settlement = makeSettlement(
+                id: UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", 2_000 + index))!,
+                groupID: groupID,
+                occurredAt: Date(timeIntervalSince1970: 3_000 - Double(index))
+            )
+            _ = try await repository.saveSettlement(settlement, idempotencyKey: UUID())
+        }
+        let firstPage = try await repository.listSettlements(groupID: groupID, cursor: nil)
+        let insertedBetweenPages = makeSettlement(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000008888")!,
+            groupID: groupID,
+            occurredAt: Date(timeIntervalSince1970: 2_949.5)
+        )
+        _ = try await repository.saveSettlement(insertedBetweenPages, idempotencyKey: UUID())
+
+        let secondPage = try await repository.listSettlements(groupID: groupID, cursor: firstPage.nextCursor)
+        XCTAssertTrue(Set(firstPage.items.map(\.id)).isDisjoint(with: Set(secondPage.items.map(\.id))))
+        XCTAssertEqual(Set(secondPage.items.map(\.id)), Set([insertedBetweenPages.id, UUID(uuidString: "00000000-0000-0000-0000-000000002050")!]))
+    }
+
+    // Catches a replacement that leaves stale split rows behind after an expense edit.
+    func testExpenseReplacementUpdatesTheStoredSplitSet() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let repository = LocalExpenseRepository(container: container)
+        let groupID = UUID(uuidString: "00000000-0000-0000-0000-000000000116")!
+        let expenseID = UUID(uuidString: "00000000-0000-0000-0000-000000000117")!
+        let initial = Expense(
+            id: expenseID,
+            groupID: groupID,
+            title: "Groceries",
+            note: nil,
+            total: Money(minorUnits: 1_000_00, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [
+                ExpenseSplit(userID: ownerID, amount: Money(minorUnits: 500_00, currencyCode: "PKR")),
+                ExpenseSplit(userID: memberID, amount: Money(minorUnits: 500_00, currencyCode: "PKR"))
+            ],
+            splitMethod: .equal,
+            occurredAt: Date(timeIntervalSince1970: 1_000),
+            createdByUserID: ownerID,
+            revision: 1
+        )
+        let updated = Expense(
+            id: expenseID,
+            groupID: groupID,
+            title: "Groceries",
+            note: "Corrected",
+            total: Money(minorUnits: 1_000_00, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [ExpenseSplit(userID: ownerID, amount: Money(minorUnits: 1_000_00, currencyCode: "PKR"))],
+            splitMethod: .equal,
+            occurredAt: Date(timeIntervalSince1970: 1_000),
+            createdByUserID: ownerID,
+            revision: 2
+        )
+
+        _ = try await repository.saveExpense(initial, idempotencyKey: UUID())
+        _ = try await repository.saveExpense(updated, idempotencyKey: UUID())
+
+        let storedExpense = try await repository.expenseForSync(id: expenseID)
+        XCTAssertEqual(storedExpense, updated)
+    }
+
+    // Catches future schema changes that remove the V1 migration path without updating the plan.
+    func testVersionOneSchemaIsRegisteredWithMigrationPlan() {
+        XCTAssertEqual(BarabariSchemaV1.versionIdentifier, Schema.Version(1, 0, 0))
+        XCTAssertEqual(BarabariMigrationPlan.schemas.count, 1)
+    }
+
+    // Catches a local balance adapter that ignores persisted split or settlement rows during reconstruction.
+    func testLocalBalanceRepositoryReconstructsPersistedLedger() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let groups = LocalGroupRepository(container: container)
+        let expenses = LocalExpenseRepository(container: container)
+        let settlements = LocalSettlementRepository(container: container)
+        let balances = LocalBalanceRepository(container: container)
+        let group = try await groups.createGroup(name: "Flat", description: nil, ownerID: ownerID)
+        try await groups.upsertMember(GroupMember(groupID: group.id, userID: memberID, role: .member))
+        let expense = Expense(
+            groupID: group.id,
+            title: "Dinner",
+            note: nil,
+            total: Money(minorUnits: 1_000_00, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [
+                ExpenseSplit(userID: ownerID, amount: Money(minorUnits: 500_00, currencyCode: "PKR")),
+                ExpenseSplit(userID: memberID, amount: Money(minorUnits: 500_00, currencyCode: "PKR"))
+            ],
+            splitMethod: .equal,
+            occurredAt: Date(timeIntervalSince1970: 1_000),
+            createdByUserID: ownerID
+        )
+        _ = try await expenses.saveExpense(expense, idempotencyKey: UUID())
+        _ = try await settlements.saveSettlement(
+            makeSettlement(id: UUID(), groupID: group.id, occurredAt: Date(timeIntervalSince1970: 1_001), amount: 200_00),
+            idempotencyKey: UUID()
+        )
+
+        let summary = try await balances.summary(groupID: group.id)
+        XCTAssertEqual(summary.netPosition(for: ownerID)?.amount, Money(minorUnits: 300_00, currencyCode: "PKR"))
+        XCTAssertEqual(summary.netPosition(for: memberID)?.amount, Money(minorUnits: -300_00, currencyCode: "PKR"))
+    }
+
+    private func makeExpense(id: UUID, groupID: UUID, occurredAt: Date) -> Expense {
+        Expense(
+            id: id,
+            groupID: groupID,
+            title: "Test expense",
+            note: nil,
+            total: Money(minorUnits: 100_00, currencyCode: "PKR"),
+            paidByUserID: ownerID,
+            splits: [ExpenseSplit(userID: ownerID, amount: Money(minorUnits: 100_00, currencyCode: "PKR"))],
+            splitMethod: .equal,
+            occurredAt: occurredAt,
+            createdByUserID: ownerID
+        )
+    }
+
+    private func makeSettlement(id: UUID, groupID: UUID, occurredAt: Date, amount: Int64 = 100_00) -> Settlement {
+        Settlement(
+            id: id,
+            groupID: groupID,
+            fromUserID: memberID,
+            toUserID: ownerID,
+            amount: Money(minorUnits: amount, currencyCode: "PKR"),
+            method: .raast,
+            note: nil,
+            occurredAt: occurredAt,
+            createdByUserID: memberID
+        )
+    }
 }

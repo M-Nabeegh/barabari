@@ -3,7 +3,6 @@ import SwiftData
 
 final actor LocalExpenseRepository: ExpenseRepository {
     private let container: ModelContainer
-    private let pageSize = 50
 
     init(container: ModelContainer) {
         self.container = container
@@ -15,24 +14,29 @@ final actor LocalExpenseRepository: ExpenseRepository {
             .filter { $0.groupID == groupID && $0.deletedAt == nil }
         let domains = try expenses.map { try domainExpense(from: $0, context: context) }
         let sorted = domains.sorted(by: sortExpenses)
-        return page(items: sorted, cursor: cursor)
+        return try LocalLedgerPagination.page(
+            items: sorted,
+            cursor: cursor,
+            occurredAt: \.occurredAt,
+            id: \.id
+        )
     }
 
     func saveExpense(_ expense: Expense, idempotencyKey: UUID) throws -> Expense {
         let context = ModelContext(container)
-        let records = try context.fetch(FetchDescriptor<StoredExpense>())
-        if let idempotentRecord = records.first(where: { $0.idempotencyKey == idempotencyKey }) {
-            return try domainExpense(from: idempotentRecord, context: context)
+        if let command = try command(for: idempotencyKey, context: context) {
+            return try existingExpense(for: command, context: context)
         }
 
+        let records = try context.fetch(FetchDescriptor<StoredExpense>())
         let isNew: Bool
         let record: StoredExpense
         if let existing = records.first(where: { $0.id == expense.id }) {
-            try existing.apply(expense, idempotencyKey: idempotencyKey)
+            try existing.apply(expense)
             record = existing
             isNew = false
         } else {
-            record = try StoredExpense(expense: expense, idempotencyKey: idempotencyKey)
+            record = try StoredExpense(expense: expense)
             context.insert(record)
             isNew = true
         }
@@ -46,12 +50,31 @@ final actor LocalExpenseRepository: ExpenseRepository {
                 occurredAt: expense.occurredAt
             )))
         }
-        try context.save()
+        context.insert(StoredLedgerCommand(
+            idempotencyKey: idempotencyKey,
+            kind: .saveExpense,
+            subjectID: expense.id
+        ))
+        do {
+            try context.save()
+        } catch {
+            let recoveryContext = ModelContext(container)
+            if let command = try? command(for: idempotencyKey, context: recoveryContext) {
+                return try existingExpense(for: command, context: recoveryContext)
+            }
+            throw error
+        }
         return try domainExpense(from: record, context: context)
     }
 
     func requestExpenseDeletion(id: UUID, idempotencyKey: UUID) throws {
         let context = ModelContext(container)
+        if let command = try command(for: idempotencyKey, context: context) {
+            guard command.kind == .deleteExpense, command.subjectID == id else {
+                throw LocalPersistenceError.idempotencyKeyConflict(idempotencyKey)
+            }
+            return
+        }
         guard let record = try context.fetch(FetchDescriptor<StoredExpense>()).first(where: { $0.id == id }) else {
             throw LocalPersistenceError.missingExpense(id)
         }
@@ -61,7 +84,6 @@ final actor LocalExpenseRepository: ExpenseRepository {
         record.deletedAt = now
         record.updatedAt = now
         record.revision += 1
-        record.idempotencyKey = idempotencyKey
         context.insert(StoredActivityEvent(event: ActivityEvent(
             groupID: record.groupID,
             actorUserID: record.createdByUserID,
@@ -69,7 +91,22 @@ final actor LocalExpenseRepository: ExpenseRepository {
             subjectID: record.id,
             occurredAt: now
         )))
-        try context.save()
+        context.insert(StoredLedgerCommand(
+            idempotencyKey: idempotencyKey,
+            kind: .deleteExpense,
+            subjectID: id
+        ))
+        do {
+            try context.save()
+        } catch {
+            let recoveryContext = ModelContext(container)
+            if let command = try? command(for: idempotencyKey, context: recoveryContext),
+               command.kind == .deleteExpense,
+               command.subjectID == id {
+                return
+            }
+            throw error
+        }
     }
 
     /// Sync must see tombstones so the server can reconcile deletions without resurrecting records.
@@ -113,10 +150,18 @@ final actor LocalExpenseRepository: ExpenseRepository {
         return try record.asDomain(splits: splits)
     }
 
-    private func page(items: [Expense], cursor: String?) -> Page<Expense> {
-        let start = min(max(Int(cursor ?? "0") ?? 0, 0), items.count)
-        let end = min(start + pageSize, items.count)
-        return Page(items: Array(items[start..<end]), nextCursor: end < items.count ? String(end) : nil)
+    private func command(for key: UUID, context: ModelContext) throws -> StoredLedgerCommand? {
+        try context.fetch(FetchDescriptor<StoredLedgerCommand>()).first { $0.idempotencyKey == key }
+    }
+
+    private func existingExpense(for command: StoredLedgerCommand, context: ModelContext) throws -> Expense {
+        guard command.kind == .saveExpense else {
+            throw LocalPersistenceError.idempotencyKeyConflict(command.idempotencyKey)
+        }
+        guard let record = try context.fetch(FetchDescriptor<StoredExpense>()).first(where: { $0.id == command.subjectID }) else {
+            throw LocalPersistenceError.missingIdempotencySubject(command.idempotencyKey)
+        }
+        return try domainExpense(from: record, context: context)
     }
 
     private func sortExpenses(_ lhs: Expense, _ rhs: Expense) -> Bool {

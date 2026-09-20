@@ -3,7 +3,6 @@ import SwiftData
 
 final actor LocalSettlementRepository: SettlementRepository {
     private let container: ModelContainer
-    private let pageSize = 50
 
     init(container: ModelContainer) {
         self.container = container
@@ -15,24 +14,29 @@ final actor LocalSettlementRepository: SettlementRepository {
             .filter { $0.groupID == groupID && $0.deletedAt == nil }
             .map(\.asDomain)
             .sorted(by: sortSettlements)
-        return page(items: settlements, cursor: cursor)
+        return try LocalLedgerPagination.page(
+            items: settlements,
+            cursor: cursor,
+            occurredAt: \.occurredAt,
+            id: \.id
+        )
     }
 
     func saveSettlement(_ settlement: Settlement, idempotencyKey: UUID) throws -> Settlement {
         let context = ModelContext(container)
-        let records = try context.fetch(FetchDescriptor<StoredSettlement>())
-        if let idempotentRecord = records.first(where: { $0.idempotencyKey == idempotencyKey }) {
-            return idempotentRecord.asDomain
+        if let command = try command(for: idempotencyKey, context: context) {
+            return try existingSettlement(for: command, context: context)
         }
 
+        let records = try context.fetch(FetchDescriptor<StoredSettlement>())
         let isNew: Bool
         let record: StoredSettlement
         if let existing = records.first(where: { $0.id == settlement.id }) {
-            existing.apply(settlement, idempotencyKey: idempotencyKey)
+            existing.apply(settlement)
             record = existing
             isNew = false
         } else {
-            record = StoredSettlement(settlement: settlement, idempotencyKey: idempotencyKey)
+            record = StoredSettlement(settlement: settlement)
             context.insert(record)
             isNew = true
         }
@@ -45,7 +49,20 @@ final actor LocalSettlementRepository: SettlementRepository {
                 occurredAt: settlement.occurredAt
             )))
         }
-        try context.save()
+        context.insert(StoredLedgerCommand(
+            idempotencyKey: idempotencyKey,
+            kind: .saveSettlement,
+            subjectID: settlement.id
+        ))
+        do {
+            try context.save()
+        } catch {
+            let recoveryContext = ModelContext(container)
+            if let command = try? command(for: idempotencyKey, context: recoveryContext) {
+                return try existingSettlement(for: command, context: recoveryContext)
+            }
+            throw error
+        }
         return record.asDomain
     }
 
@@ -57,10 +74,18 @@ final actor LocalSettlementRepository: SettlementRepository {
             .sorted(by: sortSettlements)
     }
 
-    private func page(items: [Settlement], cursor: String?) -> Page<Settlement> {
-        let start = min(max(Int(cursor ?? "0") ?? 0, 0), items.count)
-        let end = min(start + pageSize, items.count)
-        return Page(items: Array(items[start..<end]), nextCursor: end < items.count ? String(end) : nil)
+    private func command(for key: UUID, context: ModelContext) throws -> StoredLedgerCommand? {
+        try context.fetch(FetchDescriptor<StoredLedgerCommand>()).first { $0.idempotencyKey == key }
+    }
+
+    private func existingSettlement(for command: StoredLedgerCommand, context: ModelContext) throws -> Settlement {
+        guard command.kind == .saveSettlement else {
+            throw LocalPersistenceError.idempotencyKeyConflict(command.idempotencyKey)
+        }
+        guard let record = try context.fetch(FetchDescriptor<StoredSettlement>()).first(where: { $0.id == command.subjectID }) else {
+            throw LocalPersistenceError.missingIdempotencySubject(command.idempotencyKey)
+        }
+        return record.asDomain
     }
 
     private func sortSettlements(_ lhs: Settlement, _ rhs: Settlement) -> Bool {

@@ -1,8 +1,8 @@
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Query(sort: \ActivityRecord.happenedAt, order: .reverse) private var activity: [ActivityRecord]
+    let environment: AppEnvironment
+    @State private var activity: [ActivityEvent] = []
     @State private var selection = Tab.home
 
     var body: some View {
@@ -28,6 +28,9 @@ struct ContentView: View {
                 .tag(Tab.settings)
         }
         .tint(.teal)
+        .task {
+            activity = (try? await environment.recentActivity(limit: 10)) ?? []
+        }
     }
 
     private var home: some View {
@@ -54,8 +57,8 @@ struct ContentView: View {
                     } else {
                         ForEach(activity) { item in
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(item.title)
-                                Text(item.subtitle)
+                                Text(activityTitle(for: item))
+                                Text(item.kind.rawValue.replacingOccurrences(of: "([A-Z])", with: " $1", options: .regularExpression).capitalized)
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
@@ -71,6 +74,23 @@ struct ContentView: View {
         NavigationStack {
             ContentUnavailableView(title, systemImage: symbol, description: Text("Coming in the next Barabari milestone."))
                 .navigationTitle(title)
+        }
+    }
+
+    private func activityTitle(for event: ActivityEvent) -> String {
+        switch event.kind {
+        case .groupCreated:
+            "Group created"
+        case .expenseCreated:
+            "Expense added"
+        case .expenseDeleted:
+            "Expense deleted"
+        case .settlementRecorded:
+            "Settlement recorded"
+        case .memberJoined:
+            "Member joined"
+        case .memberRemoved:
+            "Member removed"
         }
     }
 

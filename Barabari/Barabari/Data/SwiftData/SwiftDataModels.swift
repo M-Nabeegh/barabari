@@ -4,6 +4,34 @@ import SwiftData
 enum LocalPersistenceError: Error, Equatable, Sendable {
     case invalidSplitMethod(UUID)
     case missingExpense(UUID)
+    case invalidCursor
+    case idempotencyKeyConflict(UUID)
+    case missingIdempotencySubject(UUID)
+}
+
+enum StoredLedgerCommandKind: String, Codable, Sendable {
+    case saveExpense
+    case deleteExpense
+    case saveSettlement
+}
+
+@Model
+final class StoredLedgerCommand {
+    @Attribute(.unique) var idempotencyKey: UUID
+    var kindRawValue: String
+    var subjectID: UUID
+    var createdAt: Date
+
+    init(idempotencyKey: UUID, kind: StoredLedgerCommandKind, subjectID: UUID, createdAt: Date = .now) {
+        self.idempotencyKey = idempotencyKey
+        kindRawValue = kind.rawValue
+        self.subjectID = subjectID
+        self.createdAt = createdAt
+    }
+
+    var kind: StoredLedgerCommandKind? {
+        StoredLedgerCommandKind(rawValue: kindRawValue)
+    }
 }
 
 @Model
@@ -104,9 +132,7 @@ final class StoredExpense {
     var updatedAt: Date
     var revision: Int
     var deletedAt: Date?
-    var idempotencyKey: UUID?
-
-    init(expense: Expense, idempotencyKey: UUID?) throws {
+    init(expense: Expense) throws {
         id = expense.id
         groupID = expense.groupID
         title = expense.title
@@ -121,10 +147,9 @@ final class StoredExpense {
         updatedAt = expense.updatedAt
         revision = expense.revision
         deletedAt = expense.deletedAt
-        self.idempotencyKey = idempotencyKey
     }
 
-    func apply(_ expense: Expense, idempotencyKey: UUID?) throws {
+    func apply(_ expense: Expense) throws {
         groupID = expense.groupID
         title = expense.title
         note = expense.note
@@ -138,7 +163,6 @@ final class StoredExpense {
         updatedAt = expense.updatedAt
         revision = expense.revision
         deletedAt = expense.deletedAt
-        self.idempotencyKey = idempotencyKey
     }
 
     func asDomain(splits: [ExpenseSplit]) throws -> Expense {
@@ -209,9 +233,7 @@ final class StoredSettlement {
     var updatedAt: Date
     var revision: Int
     var deletedAt: Date?
-    var idempotencyKey: UUID?
-
-    init(settlement: Settlement, idempotencyKey: UUID?) {
+    init(settlement: Settlement) {
         id = settlement.id
         groupID = settlement.groupID
         fromUserID = settlement.fromUserID
@@ -226,10 +248,9 @@ final class StoredSettlement {
         updatedAt = settlement.updatedAt
         revision = settlement.revision
         deletedAt = settlement.deletedAt
-        self.idempotencyKey = idempotencyKey
     }
 
-    func apply(_ settlement: Settlement, idempotencyKey: UUID?) {
+    func apply(_ settlement: Settlement) {
         groupID = settlement.groupID
         fromUserID = settlement.fromUserID
         toUserID = settlement.toUserID
@@ -243,7 +264,6 @@ final class StoredSettlement {
         updatedAt = settlement.updatedAt
         revision = settlement.revision
         deletedAt = settlement.deletedAt
-        self.idempotencyKey = idempotencyKey
     }
 
     var asDomain: Settlement {
@@ -301,5 +321,55 @@ final class StoredActivityEvent {
             revision: revision,
             deletedAt: deletedAt
         )
+    }
+}
+
+struct LocalLedgerCursor: Codable, Equatable, Sendable {
+    let occurredAt: Date
+    let id: UUID
+}
+
+enum LocalLedgerPagination {
+    private static let pageSize = 50
+
+    static func page<Item: Equatable & Sendable>(
+        items: [Item],
+        cursor: String?,
+        occurredAt: (Item) -> Date,
+        id: (Item) -> UUID
+    ) throws -> Page<Item> {
+        let cursor = try cursor.map(decode)
+        let remaining = cursor.map { boundary in
+            items.filter { item in
+                let itemDate = occurredAt(item)
+                return itemDate < boundary.occurredAt || (
+                    itemDate == boundary.occurredAt && uuidBytes(boundary.id).lexicographicallyPrecedes(uuidBytes(id(item)))
+                )
+            }
+        } ?? items
+        let pageItems = Array(remaining.prefix(pageSize))
+        let nextCursor = remaining.count > pageItems.count ? pageItems.last.map {
+            encode(LocalLedgerCursor(occurredAt: occurredAt($0), id: id($0)))
+        } : nil
+        return Page(items: pageItems, nextCursor: nextCursor)
+    }
+
+    private static func encode(_ cursor: LocalLedgerCursor) -> String {
+        guard let data = try? JSONEncoder().encode(cursor) else {
+            preconditionFailure("A keyset cursor made only of a Date and UUID must be encodable.")
+        }
+        return data.base64EncodedString()
+    }
+
+    private static func decode(_ value: String) throws -> LocalLedgerCursor {
+        guard let data = Data(base64Encoded: value),
+              let cursor = try? JSONDecoder().decode(LocalLedgerCursor.self, from: data) else {
+            throw LocalPersistenceError.invalidCursor
+        }
+        return cursor
+    }
+
+    private static func uuidBytes(_ id: UUID) -> [UInt8] {
+        withUnsafeBytes(of: id.uuid) { Array($0) }
     }
 }

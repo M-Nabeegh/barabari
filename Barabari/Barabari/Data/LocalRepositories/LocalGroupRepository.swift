@@ -62,6 +62,18 @@ final actor LocalGroupRepository: GroupRepository {
             }
     }
 
+    func recentActivities(limit: Int) throws -> [ActivityEvent] {
+        let context = ModelContext(container)
+        let events = try context.fetch(FetchDescriptor<StoredActivityEvent>())
+            .filter { $0.deletedAt == nil }
+            .map(\.asDomain)
+            .sorted { lhs, rhs in
+                if lhs.occurredAt != rhs.occurredAt { return lhs.occurredAt > rhs.occurredAt }
+                return uuidBytes(lhs.id).lexicographicallyPrecedes(uuidBytes(rhs.id))
+            }
+        return Array(events.prefix(max(limit, 0)))
+    }
+
     private func sortGroups(_ lhs: Group, _ rhs: Group) -> Bool {
         if lhs.createdAt != rhs.createdAt { return lhs.createdAt > rhs.createdAt }
         return uuidBytes(lhs.id).lexicographicallyPrecedes(uuidBytes(rhs.id))
