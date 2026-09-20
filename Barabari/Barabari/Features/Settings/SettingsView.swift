@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let isDemo: Bool
     @StateObject private var viewModel = SettingsViewModel()
     @State private var selectedFeature: SettingsFeature?
 
@@ -31,7 +32,10 @@ struct SettingsView: View {
                 }
                 .background(BarabariColors.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
 
-                StatusBadge("Demo mode: data stays on this iPhone.", style: .neutral)
+                StatusBadge(
+                    isDemo ? "Demo mode: data stays on this iPhone." : "Your data stays on this iPhone.",
+                    style: .neutral
+                )
             }
             .padding(BarabariSpacing.screen)
             .padding(.bottom, 92)

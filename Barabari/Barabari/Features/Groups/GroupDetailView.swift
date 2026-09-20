@@ -33,6 +33,10 @@ struct GroupDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.load() }
         .refreshable { await viewModel.refresh() }
+        .onChange(of: isPresentingSettlement) { _, isPresenting in
+            guard !isPresenting else { return }
+            Task { await viewModel.refresh() }
+        }
         .navigationDestination(isPresented: $isPresentingSettlement) {
             if let transfer = selectedTransfer, let selectedGroupID {
                 SettlementView(

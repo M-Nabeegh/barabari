@@ -15,6 +15,7 @@ struct AppEnvironment {
     let balanceRepository: LocalBalanceRepository
     let currentUserID: UUID
     let isOffline: Bool
+    let isDemo: Bool
 
     static let live = AppEnvironment(inMemory: false)
     static let demo = AppEnvironment(inMemory: true, seedDemoData: true)
@@ -43,6 +44,7 @@ struct AppEnvironment {
             balanceRepository = LocalBalanceRepository(container: container)
             self.currentUserID = currentUserID
             self.isOffline = isOffline
+            self.isDemo = seedDemoData
         } catch {
             fatalError("Unable to create Barabari's local ledger store: \(error.localizedDescription)")
         }

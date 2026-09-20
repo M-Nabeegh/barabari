@@ -30,6 +30,9 @@ final class SettlementFlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Raast payment to Member 2 is now in this group’s ledger on this iPhone."].exists)
 
         app.navigationBars["Settle up"].buttons["Barabari Demo"].tap()
+        let remainingDebt = app.buttons["You owe"]
+        XCTAssertTrue(remainingDebt.waitForExistence(timeout: 2))
+        XCTAssertTrue((remainingDebt.value as? String ?? "").contains("500"))
         app.navigationBars["Barabari Demo"].buttons["Groups"].tap()
         app.buttons["Activity"].tap()
         XCTAssertTrue(app.staticTexts["Settlement recorded"].waitForExistence(timeout: 2))

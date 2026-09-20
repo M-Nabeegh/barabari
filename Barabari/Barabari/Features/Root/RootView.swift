@@ -54,7 +54,7 @@ struct RootView: View {
         case .activity:
             ActivityView(environment: environment)
         case .settings:
-            SettingsView()
+            SettingsView(isDemo: environment.isDemo)
         }
     }
 }

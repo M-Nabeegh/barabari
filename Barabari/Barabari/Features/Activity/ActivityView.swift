@@ -109,10 +109,10 @@ struct ActivityView: View {
             var settlements: [UUID: Settlement] = [:]
             for group in groups {
                 activity += try await environment.activity(groupID: group.id)
-                for expense in try await environment.expenseRepository.listExpenses(groupID: group.id, cursor: nil).items {
+                for expense in try await allExpenses(groupID: group.id) {
                     expenses[expense.id] = expense
                 }
-                for settlement in try await environment.settlementRepository.listSettlements(groupID: group.id, cursor: nil).items {
+                for settlement in try await allSettlements(groupID: group.id) {
                     settlements[settlement.id] = settlement
                 }
             }
@@ -128,6 +128,28 @@ struct ActivityView: View {
         } catch {
             state = .failed(error.localizedDescription)
         }
+    }
+
+    private func allExpenses(groupID: UUID) async throws -> [Expense] {
+        var cursor: String?
+        var expenses: [Expense] = []
+        repeat {
+            let page = try await environment.expenseRepository.listExpenses(groupID: groupID, cursor: cursor)
+            expenses += page.items
+            cursor = page.nextCursor
+        } while cursor != nil
+        return expenses
+    }
+
+    private func allSettlements(groupID: UUID) async throws -> [Settlement] {
+        var cursor: String?
+        var settlements: [Settlement] = []
+        repeat {
+            let page = try await environment.settlementRepository.listSettlements(groupID: groupID, cursor: cursor)
+            settlements += page.items
+            cursor = page.nextCursor
+        } while cursor != nil
+        return settlements
     }
 
     private func title(for row: ActivityRow) -> String {
