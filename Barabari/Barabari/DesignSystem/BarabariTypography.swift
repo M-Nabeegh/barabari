@@ -9,7 +9,7 @@ enum BarabariTypography {
     static func amount(for style: AmountText.Style) -> Font {
         switch style {
         case .hero:
-            return .system(size: 34, weight: .bold, design: .rounded)
+            return .system(.largeTitle, design: .rounded, weight: .bold)
         case .title:
             return .system(.title2, design: .rounded, weight: .bold)
         case .body:

@@ -35,7 +35,7 @@ struct SettlementView: View {
                 }
             }
             .padding(BarabariSpacing.screen)
-            .padding(.bottom, 42)
+            .padding(.bottom, BarabariSpacing.bottomContent)
         }
         .background(BarabariColors.background)
         .navigationTitle("Settle up")

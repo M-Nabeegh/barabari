@@ -23,7 +23,7 @@ struct GroupsView: View {
                 }
             }
             .padding(BarabariSpacing.screen)
-            .padding(.bottom, BarabariSpacing.section)
+            .padding(.bottom, BarabariSpacing.bottomContent)
         }
         .navigationTitle("Groups")
         .navigationBarTitleDisplayMode(.large)

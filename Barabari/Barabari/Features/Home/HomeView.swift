@@ -4,6 +4,7 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     let revision: Int
     let showGroups: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         ScrollView {
@@ -22,7 +23,7 @@ struct HomeView: View {
                 }
             }
             .padding(BarabariSpacing.screen)
-            .padding(.bottom, BarabariSpacing.section)
+            .padding(.bottom, BarabariSpacing.bottomContent)
         }
         .navigationTitle("Barabari")
         .navigationBarTitleDisplayMode(.large)
@@ -82,9 +83,16 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: BarabariSpacing.row) {
                 Text("At a glance")
                     .font(BarabariTypography.sectionTitle)
-                HStack(spacing: BarabariSpacing.row) {
-                    balanceMetric("You are owed", amount: snapshot.amountOwed, color: BarabariColors.success)
-                    balanceMetric("You owe", amount: snapshot.amountOwing, color: BarabariColors.danger)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(spacing: BarabariSpacing.row) {
+                        balanceMetric("You are owed", amount: snapshot.amountOwed, color: BarabariColors.success)
+                        balanceMetric("You owe", amount: snapshot.amountOwing, color: BarabariColors.danger)
+                    }
+                } else {
+                    HStack(spacing: BarabariSpacing.row) {
+                        balanceMetric("You are owed", amount: snapshot.amountOwed, color: BarabariColors.success)
+                        balanceMetric("You owe", amount: snapshot.amountOwing, color: BarabariColors.danger)
+                    }
                 }
             }
 

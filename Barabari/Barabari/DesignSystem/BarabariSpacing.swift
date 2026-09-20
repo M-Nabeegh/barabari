@@ -6,4 +6,5 @@ enum BarabariSpacing {
     static let section: CGFloat = 26
     static let row: CGFloat = 12
     static let compact: CGFloat = 8
+    static let bottomContent: CGFloat = 92
 }

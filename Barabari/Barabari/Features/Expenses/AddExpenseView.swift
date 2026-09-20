@@ -16,6 +16,7 @@ struct AddExpenseView: View {
     @ObservedObject private var viewModel: AddExpenseViewModel
     private let session: LedgerSession
     @FocusState private var focusedField: AddExpenseFocusedField?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(viewModel: AddExpenseViewModel, session: LedgerSession) {
         self.viewModel = viewModel
@@ -42,7 +43,7 @@ struct AddExpenseView: View {
                     }
                 }
                 .padding(BarabariSpacing.screen)
-                .padding(.bottom, 92)
+                .padding(.bottom, BarabariSpacing.bottomContent)
                 .id(viewModel.savedExpense?.id)
             }
             .onChange(of: viewModel.splitSelection) { _, selection in
@@ -69,8 +70,12 @@ struct AddExpenseView: View {
     private func scrollToExactShares(using proxy: ScrollViewProxy) {
         Task { @MainActor in
             await Task.yield()
-            withAnimation(.snappy) {
+            if reduceMotion {
                 proxy.scrollTo(AddExpenseScrollAnchor.exactShares, anchor: .center)
+            } else {
+                withAnimation(.snappy) {
+                    proxy.scrollTo(AddExpenseScrollAnchor.exactShares, anchor: .center)
+                }
             }
         }
     }
@@ -78,8 +83,12 @@ struct AddExpenseView: View {
     private func scrollToExactShare(_ memberID: UUID, using proxy: ScrollViewProxy) {
         Task { @MainActor in
             await Task.yield()
-            withAnimation(.snappy) {
+            if reduceMotion {
                 proxy.scrollTo(AddExpenseScrollAnchor.exactShare(memberID), anchor: .center)
+            } else {
+                withAnimation(.snappy) {
+                    proxy.scrollTo(AddExpenseScrollAnchor.exactShare(memberID), anchor: .center)
+                }
             }
         }
     }

@@ -32,6 +32,7 @@ struct GroupDetailView: View {
                 }
             }
             .padding(BarabariSpacing.screen)
+            .padding(.bottom, BarabariSpacing.bottomContent)
         }
         .navigationTitle(groupTitle)
         .navigationBarTitleDisplayMode(.inline)

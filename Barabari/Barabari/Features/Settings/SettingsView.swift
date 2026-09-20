@@ -114,7 +114,7 @@ struct SettingsView: View {
                 .accessibilityIdentifier("local-demo-status")
             }
             .padding(BarabariSpacing.screen)
-            .padding(.bottom, 92)
+            .padding(.bottom, BarabariSpacing.bottomContent)
         }
         .background(BarabariColors.background)
         .navigationTitle("Settings")
