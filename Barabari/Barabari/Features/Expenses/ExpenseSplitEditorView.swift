@@ -51,7 +51,8 @@ struct ExpenseSplitEditorView: View {
                             .frame(width: 112, height: 44)
                             .padding(.horizontal, BarabariSpacing.compact)
                             .background(BarabariColors.raised, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .accessibilityIdentifier("exact-split-amount")
+                            .accessibilityLabel("Exact share for \(viewModel.memberName(for: memberID))")
+                            .accessibilityIdentifier("exact-split-amount-\(memberID.uuidString)")
                         }
                     }
                 }

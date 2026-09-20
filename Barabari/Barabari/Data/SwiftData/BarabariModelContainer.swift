@@ -23,7 +23,7 @@ enum BarabariModelContainer {
         return container
     }
 
-    static func seedDemoData(in container: ModelContainer) throws {
+    static func seedDemoData(in container: ModelContainer, includeSecondMember: Bool = false) throws {
         let context = ModelContext(container)
         guard try context.fetch(FetchDescriptor<StoredGroup>()).isEmpty else { return }
 
@@ -44,6 +44,14 @@ enum BarabariModelContainer {
             joinedAt: demoDate,
             updatedAt: demoDate
         )
+        let secondMember = GroupMember(
+            id: UUID(uuidString: "8D6F4E2C-7B1A-4C39-8DAB-5A6E7F8091B2")!,
+            groupID: group.id,
+            userID: UUID(uuidString: "A1D2E3F4-5A6B-4C7D-8E9F-001122334455")!,
+            role: .member,
+            joinedAt: demoDate,
+            updatedAt: demoDate
+        )
         let event = ActivityEvent(
             id: UUID(uuidString: "D24135D1-9502-4AFC-8F79-0C0F4F655B63")!,
             groupID: group.id,
@@ -55,6 +63,9 @@ enum BarabariModelContainer {
         )
         context.insert(StoredGroup(group: group))
         context.insert(StoredGroupMember(member: member))
+        if includeSecondMember {
+            context.insert(StoredGroupMember(member: secondMember))
+        }
         context.insert(StoredActivityEvent(event: event))
         try context.save()
     }

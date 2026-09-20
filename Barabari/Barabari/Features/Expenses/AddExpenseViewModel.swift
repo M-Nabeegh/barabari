@@ -203,12 +203,11 @@ final class AddExpenseViewModel: ObservableObject {
     }
 
     private func parseMoney(_ input: String) throws -> Money {
-        let normalized = input
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: ",", with: "")
+        let normalized = input.trimmingCharacters(in: .whitespacesAndNewlines)
         let components = normalized.split(separator: ".", omittingEmptySubsequences: false)
-        guard components.count <= 2, let wholePart = components.first, !wholePart.isEmpty,
-              wholePart.allSatisfy({ $0.isNumber }),
+        guard components.count <= 2,
+              let enteredWholePart = components.first,
+              let wholePart = normalizedWholePart(enteredWholePart),
               components.dropFirst().allSatisfy({ $0.count <= 2 && $0.allSatisfy(\.isNumber) }) else {
             throw AddExpenseValidationError.invalidAmount
         }
@@ -220,6 +219,24 @@ final class AddExpenseViewModel: ObservableObject {
         let (minorUnits, additionOverflow) = wholeInPaisa.addingReportingOverflow(fraction)
         guard !additionOverflow, minorUnits > 0 else { throw AddExpenseValidationError.invalidAmount }
         return Money(minorUnits: minorUnits, currencyCode: "PKR")
+    }
+
+    private func normalizedWholePart(_ input: Substring) -> Substring? {
+        guard !input.isEmpty else { return nil }
+        guard input.contains(",") else {
+            return input.allSatisfy(\.isNumber) ? input : nil
+        }
+
+        let groups = input.split(separator: ",", omittingEmptySubsequences: false)
+        guard groups.count > 1,
+              let firstGroup = groups.first,
+              (1...3).contains(firstGroup.count),
+              firstGroup.allSatisfy(\.isNumber),
+              groups.dropFirst().allSatisfy({ $0.count == 3 && $0.allSatisfy(\.isNumber) }) else {
+            return nil
+        }
+
+        return Substring(groups.map(String.init).joined())
     }
 
     private func message(for error: Error) -> String {

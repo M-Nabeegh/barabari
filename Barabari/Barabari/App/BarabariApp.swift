@@ -8,7 +8,11 @@ struct BarabariApp: App {
     init() {
         let arguments = ProcessInfo.processInfo.arguments
         if arguments.contains("-uiTestingDemoState") {
-            environment = AppEnvironment(inMemory: true, seedDemoData: true)
+            environment = AppEnvironment(
+                inMemory: true,
+                seedDemoData: true,
+                seedDemoSecondMember: arguments.contains("-uiTestingSecondMember")
+            )
         } else if arguments.contains("-uiTestingEmptyState") {
             environment = AppEnvironment(inMemory: true)
         } else {
