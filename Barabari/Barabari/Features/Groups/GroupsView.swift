@@ -7,7 +7,6 @@ struct GroupsView: View {
     let selectGroup: (Group) -> Void
 
     @State private var isPresentingCreateGroup = false
-    @State private var isPresentingJoinMessage = false
 
     var body: some View {
         ScrollView {
@@ -42,11 +41,6 @@ struct GroupsView: View {
                 }
             }
         }
-        .alert("Join a group", isPresented: $isPresentingJoinMessage) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Join links and QR codes are coming in the next offline-ready milestone.")
-        }
     }
 
     private var loadingView: some View {
@@ -74,14 +68,6 @@ struct GroupsView: View {
             PrimaryActionButton("Create group") {
                 isPresentingCreateGroup = true
             }
-
-            Button("Join group") {
-                isPresentingJoinMessage = true
-            }
-            .font(.system(.body, design: .rounded, weight: .semibold))
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .foregroundStyle(BarabariColors.accent)
-            .background(BarabariColors.raised, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .frame(maxWidth: .infinity, minHeight: 340, alignment: .center)
     }

@@ -70,7 +70,40 @@ struct ActivityView: View {
         }
     }
 
+    @ViewBuilder
     private func activityRow(_ row: ActivityRow) -> some View {
+        switch route(for: row) {
+        case let .expense(expense):
+            NavigationLink {
+                ExpenseDetailView(expense: expense)
+            } label: {
+                activityRowContent(row)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("activity-row-\(row.id.uuidString)")
+            .accessibilityHint("Open expense details")
+        case let .settlement(settlement):
+            NavigationLink {
+                SettlementDetailView(settlement: settlement)
+            } label: {
+                activityRowContent(row)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("activity-row-\(row.id.uuidString)")
+            .accessibilityHint("Open settlement details")
+        case let .event(event):
+            NavigationLink {
+                ActivityEventDetailView(event: event)
+            } label: {
+                activityRowContent(row)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("activity-row-\(row.id.uuidString)")
+            .accessibilityHint("Open activity details")
+        }
+    }
+
+    private func activityRowContent(_ row: ActivityRow) -> some View {
         BarabariCard {
             HStack(alignment: .top, spacing: BarabariSpacing.row) {
                 Image(systemName: symbol(for: row.event.kind))
@@ -96,6 +129,13 @@ struct ActivityView: View {
                 }
             }
         }
+        .barabariHitTarget(minHeight: 64)
+    }
+
+    private func route(for row: ActivityRow) -> ActivityRoute {
+        if let expense = row.expense { return .expense(expense) }
+        if let settlement = row.settlement { return .settlement(settlement) }
+        return .event(row.event)
     }
 
     private func title(for row: ActivityRow) -> String {
@@ -126,6 +166,73 @@ struct ActivityView: View {
         case .expenseDeleted: "trash"
         case .settlementRecorded: "checkmark.circle.fill"
         case .memberRemoved: "person.fill.xmark"
+        }
+    }
+}
+
+private enum ActivityRoute {
+    case expense(Expense)
+    case settlement(Settlement)
+    case event(ActivityEvent)
+}
+
+private struct SettlementDetailView: View {
+    let settlement: Settlement
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: BarabariSpacing.section) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 40, weight: .semibold))
+                .foregroundStyle(BarabariColors.success)
+            Text("Settlement recorded")
+                .font(BarabariTypography.screenTitle)
+            AmountText(minorUnits: settlement.amount.minorUnits, currencyCode: settlement.amount.currencyCode, style: .hero)
+            Text("Method: \(settlement.method.title)")
+                .font(BarabariTypography.body)
+            Text("Saved locally on this iPhone.")
+                .font(BarabariTypography.body)
+                .foregroundStyle(BarabariColors.textSecondary)
+        }
+        .padding(BarabariSpacing.screen)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(BarabariColors.background)
+        .navigationTitle("Settlement")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+private struct ActivityEventDetailView: View {
+    let event: ActivityEvent
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: BarabariSpacing.section) {
+            Image(systemName: "clock.fill")
+                .font(.system(size: 40, weight: .semibold))
+                .foregroundStyle(BarabariColors.accent)
+            Text(title)
+                .font(BarabariTypography.screenTitle)
+            HStack(spacing: 4) {
+                Text("Recorded locally on")
+                Text(event.occurredAt, style: .date)
+            }
+            .font(BarabariTypography.body)
+            .foregroundStyle(BarabariColors.textSecondary)
+        }
+        .padding(BarabariSpacing.screen)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(BarabariColors.background)
+        .navigationTitle("Activity")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var title: String {
+        switch event.kind {
+        case .groupCreated: "Group created"
+        case .expenseCreated: "Expense added"
+        case .expenseDeleted: "Expense removed"
+        case .settlementRecorded: "Settlement recorded"
+        case .memberJoined: "Member joined"
+        case .memberRemoved: "Member removed"
         }
     }
 }

@@ -64,7 +64,7 @@ struct RootView: View {
             .tag(AppTab.activity)
 
             NavigationStack {
-                SettingsView(isDemo: environment.isDemo)
+                SettingsView(environment: environment, isDemo: environment.isDemo)
             }
             .tabItem { Label(AppTab.settings.title, systemImage: AppTab.settings.systemImage) }
             .tag(AppTab.settings)
