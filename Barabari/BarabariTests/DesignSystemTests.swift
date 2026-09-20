@@ -26,4 +26,8 @@ final class DesignSystemTests: XCTestCase {
     func testTabBarDefinesAllPrimaryTabs() {
         XCTAssertEqual(AppTab.allCases, [.home, .groups, .addExpense, .activity, .settings])
     }
+
+    func testInteractiveControlsUseAppleMinimumHitSize() {
+        XCTAssertEqual(BarabariInteraction.minimumHitSize, 44)
+    }
 }

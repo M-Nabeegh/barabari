@@ -34,6 +34,7 @@ struct GroupsView: View {
             CreateGroupSheet { name, description in
                 Task {
                     if let group = await viewModel.createGroup(name: name, description: description) {
+                        BarabariInteraction.trigger(.success)
                         onChanged()
                         isPresentingCreateGroup = false
                         selectGroup(group)
@@ -101,11 +102,13 @@ struct GroupsView: View {
                 }
                 Spacer()
                 Button {
+                    BarabariInteraction.trigger(.selection)
                     isPresentingCreateGroup = true
                 } label: {
                     Image(systemName: "plus")
                         .font(.headline)
-                        .frame(width: 40, height: 40)
+                        .frame(width: BarabariInteraction.minimumHitSize, height: BarabariInteraction.minimumHitSize)
+                        .contentShape(Circle())
                 }
                 .accessibilityLabel("Create group")
                 .foregroundStyle(.white)
@@ -142,9 +145,11 @@ struct GroupsView: View {
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(BarabariColors.textSecondary)
                         }
+                        .contentShape(Rectangle())
                     }
                 }
                 .buttonStyle(.plain)
+                .barabariHitTarget()
                 .accessibilityLabel(group.name)
                 .accessibilityHint("Open group")
             }

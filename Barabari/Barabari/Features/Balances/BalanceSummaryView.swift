@@ -54,6 +54,7 @@ struct BalanceSummaryView: View {
         VStack(alignment: .leading, spacing: BarabariSpacing.row) {
             if let onlyTransfer = transfers.only {
                 Button {
+                    BarabariInteraction.trigger(.selection)
                     selectTransfer(onlyTransfer)
                 } label: {
                     summaryCard(
@@ -65,6 +66,7 @@ struct BalanceSummaryView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .barabariHitTarget()
                 .accessibilityIdentifier("You owe")
                 .accessibilityValue(AmountFormatter.string(minorUnits: total.minorUnits, currencyCode: total.currencyCode))
                 .accessibilityHint("Record a settlement")
@@ -151,11 +153,13 @@ struct BalanceSummaryView: View {
 
     private func settlementRow(_ transfer: BalanceTransfer) -> some View {
         Button {
+            BarabariInteraction.trigger(.selection)
             selectTransfer(transfer)
         } label: {
             transferRow(label: "Record payment", amount: transfer.amount, symbol: "arrow.up.right")
         }
         .buttonStyle(.plain)
+        .barabariHitTarget()
         .accessibilityIdentifier(transferAccessibilityIdentifier(transfer, prefix: "settlement-transfer"))
         .accessibilityValue(AmountFormatter.string(minorUnits: transfer.amount.minorUnits, currencyCode: transfer.amount.currencyCode))
         .accessibilityHint("Record a settlement")
@@ -178,7 +182,9 @@ struct BalanceSummaryView: View {
         }
         .padding(.horizontal, BarabariSpacing.row)
         .padding(.vertical, BarabariSpacing.compact)
+        .frame(minHeight: BarabariInteraction.minimumHitSize)
         .background(BarabariColors.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func transferAccessibilityIdentifier(_ transfer: BalanceTransfer, prefix: String) -> String {

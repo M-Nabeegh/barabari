@@ -12,10 +12,12 @@ struct ExpenseSplitEditorView: View {
             HStack(spacing: BarabariSpacing.compact) {
                 ForEach(ExpenseSplitSelection.allCases) { selection in
                     Button(selection.title) {
+                        BarabariInteraction.trigger(.selection)
                         viewModel.selectSplit(selection)
                     }
                     .font(.system(.subheadline, design: .rounded, weight: .semibold))
                     .frame(maxWidth: .infinity, minHeight: 44)
+                    .contentShape(Capsule())
                     .foregroundStyle(viewModel.splitSelection == selection ? .white : BarabariColors.accent)
                     .background(
                         viewModel.splitSelection == selection ? BarabariColors.accent : BarabariColors.raised,
@@ -51,6 +53,7 @@ struct ExpenseSplitEditorView: View {
                             .frame(width: 112, height: 44)
                             .padding(.horizontal, BarabariSpacing.compact)
                             .background(BarabariColors.raised, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .accessibilityLabel("Exact share for \(viewModel.memberName(for: memberID))")
                             .accessibilityIdentifier("exact-split-amount-\(memberID.uuidString)")
                             .id(AddExpenseScrollAnchor.exactShare(memberID))

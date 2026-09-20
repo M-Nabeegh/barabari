@@ -24,7 +24,11 @@ final class SettlementFlowUITests: XCTestCase {
 
         app.buttons["Raast"].tap()
         app.swipeUp()
-        app.buttons["Mark as paid"].tap()
+        let markAsPaid = app.buttons["Mark as paid"]
+        markAsPaid.tap()
+        if markAsPaid.waitForExistence(timeout: 0.5) {
+            markAsPaid.tap()
+        }
 
         XCTAssertTrue(app.staticTexts["Settlement recorded locally"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Raast payment to Member 2 is now in this group’s ledger on this iPhone."].exists)

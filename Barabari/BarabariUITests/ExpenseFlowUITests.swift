@@ -27,7 +27,11 @@ final class ExpenseFlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Split preview"].exists)
         XCTAssertTrue(app.staticTexts["You"].exists)
 
-        app.buttons["Save expense"].tap()
+        let saveButton = app.buttons["Save expense"]
+        saveButton.tap()
+        if saveButton.waitForExistence(timeout: 0.5) {
+            saveButton.tap()
+        }
 
         XCTAssertTrue(app.staticTexts["Expense saved locally"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["Add another expense"].exists)

@@ -34,8 +34,9 @@ final class SettlementViewModel: ObservableObject {
         self.recipient = recipient
     }
 
-    func save() async {
-        guard !isSaving else { return }
+    @discardableResult
+    func save() async -> Bool {
+        guard !isSaving else { return false }
         validationMessage = nil
         isSaving = true
         defer { isSaving = false }
@@ -59,8 +60,10 @@ final class SettlementViewModel: ObservableObject {
                 repository: environment.settlementRepository,
                 groupRepository: environment.groupRepository
             ).call(draft: draft, idempotencyKey: UUID())
+            return true
         } catch {
             validationMessage = message(for: error)
+            return false
         }
     }
 

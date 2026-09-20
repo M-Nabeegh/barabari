@@ -10,10 +10,14 @@ struct PrimaryActionButton<Label: View>: View {
     }
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            BarabariInteraction.trigger(.selection)
+            action()
+        } label: {
             label
                 .font(.system(.body, design: .rounded, weight: .semibold))
-                .frame(maxWidth: .infinity, minHeight: 52)
+                .frame(maxWidth: .infinity, minHeight: max(52, BarabariInteraction.minimumHitSize))
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .foregroundStyle(.white)

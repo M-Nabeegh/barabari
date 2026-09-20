@@ -143,7 +143,9 @@ struct AddExpenseView: View {
             Button {
                 focusedField = nil
                 Task {
-                    if await viewModel.save() {
+                    let didSave = await viewModel.save()
+                    BarabariInteraction.trigger(didSave ? .success : .error)
+                    if didSave {
                         session.markChanged()
                     }
                 }
@@ -198,6 +200,7 @@ struct AddExpenseView: View {
             }
             ForEach(viewModel.members) { member in
                 Button {
+                    BarabariInteraction.trigger(.selection)
                     viewModel.toggleParticipant(member.userID)
                 } label: {
                     HStack(spacing: BarabariSpacing.row) {
@@ -208,6 +211,7 @@ struct AddExpenseView: View {
                         Spacer()
                     }
                     .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Split with \(viewModel.memberName(for: member.userID))")

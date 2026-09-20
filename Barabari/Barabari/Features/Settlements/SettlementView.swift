@@ -100,9 +100,13 @@ struct SettlementView: View {
                     .foregroundStyle(BarabariColors.textSecondary)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: BarabariSpacing.compact) {
                     ForEach(SettlementMethod.allCases, id: \.self) { method in
-                        Button(method.title) { viewModel.method = method }
+                        Button(method.title) {
+                            BarabariInteraction.trigger(.selection)
+                            viewModel.method = method
+                        }
                             .font(.system(.body, design: .rounded, weight: .semibold))
-                            .frame(maxWidth: .infinity, minHeight: 46)
+                            .frame(maxWidth: .infinity, minHeight: max(46, BarabariInteraction.minimumHitSize))
+                            .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                             .foregroundStyle(viewModel.method == method ? Color.white : BarabariColors.textPrimary)
                             .background(
                                 viewModel.method == method ? BarabariColors.accent : BarabariColors.surface,
@@ -131,7 +135,10 @@ struct SettlementView: View {
 
             PrimaryActionButton(viewModel.isSaving ? "Recording..." : "Mark as paid") {
                 isAmountFocused = false
-                Task { await viewModel.save() }
+                Task {
+                    let didSave = await viewModel.save()
+                    BarabariInteraction.trigger(didSave ? .success : .error)
+                }
             }
             .disabled(viewModel.isSaving)
         }

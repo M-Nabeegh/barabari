@@ -15,6 +15,23 @@ final class NavigationUITests: XCTestCase {
         }
     }
 
+    func testPrimaryDestinationsStayReachableAfterRepeatedSwitching() {
+        let app = makeApp(arguments: ["-uiTestingDemoState"])
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Group created"].waitForExistence(timeout: 2))
+
+        for _ in 0..<2 {
+            for tab in ["Home", "Groups", "Add", "Activity", "Settings"] {
+                let button = app.buttons[tab]
+                XCTAssertTrue(button.waitForExistence(timeout: 2))
+                button.tap()
+            }
+        }
+
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 2))
+    }
+
     func testEmptyGroupsOfferCreateAndJoin() {
         let app = makeApp(arguments: ["-uiTestingEmptyState"])
         app.launch()
