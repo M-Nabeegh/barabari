@@ -66,7 +66,7 @@ struct GroupDetailView: View {
                         Image(systemName: member.role == .owner ? "crown.fill" : "person.fill")
                             .foregroundStyle(member.role == .owner ? BarabariColors.warning : BarabariColors.accent)
                             .frame(width: 22)
-                        Text(member.role == .owner ? "You" : "Group member")
+                        Text(member.userID == snapshot.currentUserID ? "You" : "Group member")
                             .font(BarabariTypography.body)
                         Spacer()
                         Text(member.role == .owner ? "Owner" : "Member")

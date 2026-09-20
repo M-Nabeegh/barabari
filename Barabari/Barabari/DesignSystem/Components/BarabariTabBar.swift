@@ -41,7 +41,10 @@ struct BarabariTabBar: View {
                         Image(systemName: tab.systemImage)
                             .font(.system(size: tab == .addExpense ? 19 : 16, weight: .semibold))
                         Text(tab.title)
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.caption2.weight(.semibold))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, minHeight: 48)
                     .contentShape(Rectangle())

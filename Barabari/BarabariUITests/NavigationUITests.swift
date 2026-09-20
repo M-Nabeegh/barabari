@@ -26,6 +26,20 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Join group"].exists)
     }
 
+    func testSeededGroupOpensItsDetail() {
+        let app = makeApp(arguments: ["-uiTestingDemoState"])
+        app.launch()
+
+        app.buttons["Groups"].tap()
+        let demoGroup = app.buttons["Barabari Demo"]
+        XCTAssertTrue(demoGroup.waitForExistence(timeout: 2))
+        demoGroup.tap()
+
+        XCTAssertTrue(app.navigationBars["Barabari Demo"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Everyone is settled up."].exists)
+        XCTAssertTrue(app.staticTexts["You"].exists)
+    }
+
     private func makeApp(arguments: [String]) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = arguments

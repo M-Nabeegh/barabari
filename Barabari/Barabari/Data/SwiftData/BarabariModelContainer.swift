@@ -2,6 +2,8 @@ import Foundation
 import SwiftData
 
 enum BarabariModelContainer {
+    private static let demoDate = Date(timeIntervalSince1970: 1_735_689_600)
+
     static func make(inMemory: Bool) throws -> ModelContainer {
         let configuration = ModelConfiguration(
             "Barabari",
@@ -30,20 +32,26 @@ enum BarabariModelContainer {
             id: UUID(uuidString: "969C9F06-CB8D-44A7-BBE9-ACAC5B1B7EA5")!,
             name: "Barabari Demo",
             description: "A local-first demo group",
-            ownerID: ownerID
+            ownerID: ownerID,
+            createdAt: demoDate,
+            updatedAt: demoDate
         )
         let member = GroupMember(
             id: UUID(uuidString: "3CC76B12-AC8D-4358-A92E-82EE34489D8D")!,
             groupID: group.id,
             userID: ownerID,
-            role: .owner
+            role: .owner,
+            joinedAt: demoDate,
+            updatedAt: demoDate
         )
         let event = ActivityEvent(
             id: UUID(uuidString: "D24135D1-9502-4AFC-8F79-0C0F4F655B63")!,
             groupID: group.id,
             actorUserID: ownerID,
             kind: .groupCreated,
-            subjectID: group.id
+            subjectID: group.id,
+            occurredAt: demoDate,
+            createdAt: demoDate
         )
         context.insert(StoredGroup(group: group))
         context.insert(StoredGroupMember(member: member))

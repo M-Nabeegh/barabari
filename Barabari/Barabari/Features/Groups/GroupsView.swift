@@ -187,7 +187,9 @@ private struct CreateGroupSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
-                        save(name, description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : description)
+                        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
+                        save(trimmedName, trimmedDescription.isEmpty ? nil : trimmedDescription)
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }

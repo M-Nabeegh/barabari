@@ -6,6 +6,7 @@ struct GroupDetailSnapshot: Equatable {
     let members: [GroupMember]
     let balance: BalanceSummary
     let activity: [ActivityEvent]
+    let currentUserID: UUID
 }
 
 enum GroupDetailState: Equatable {
@@ -45,7 +46,8 @@ final class GroupDetailViewModel: ObservableObject {
                 group: group,
                 members: try await environment.groupRepository.members(groupID: groupID),
                 balance: try await environment.balanceRepository.summary(groupID: groupID),
-                activity: try await environment.activity(groupID: groupID)
+                activity: try await environment.activity(groupID: groupID),
+                currentUserID: environment.currentUserID
             )
             state = environment.isOffline ? .offline(snapshot) : .loaded(snapshot)
         } catch {
