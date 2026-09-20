@@ -50,11 +50,7 @@ struct RootView: View {
                 router.showGroup(group)
             }
         case .addExpense:
-            FeaturePlaceholderView(
-                title: "Add expense",
-                symbol: "plus.circle.fill",
-                message: "Choose a group, then add an amount."
-            )
+            AddExpenseView(environment: environment)
         case .activity:
             FeaturePlaceholderView(
                 title: "Activity",
