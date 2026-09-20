@@ -20,7 +20,7 @@ struct PrimaryActionButton<Label: View>: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .foregroundStyle(.white)
+        .foregroundStyle(BarabariColors.onAccent)
         .background(BarabariColors.accent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .accessibilityAddTraits(.isButton)
     }

@@ -1,25 +1,39 @@
 import SwiftUI
 
 enum BarabariColors {
+    // The app icon is built around a deep indigo field, electric blue detail,
+    // and a mint balance mark. Keep those hues in one place so the product
+    // feels like one system instead of a collection of unrelated screens.
+    static let brandNavy = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x070D32) : UIColor(hex: 0x111A4B)
+    })
+    static let brandIndigo = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8D9AFF) : UIColor(hex: 0x3045D6)
+    })
+    static let brandMint = Color(uiColor: UIColor(hex: 0x98F0C2))
+
     static let background = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x080D10) : UIColor(hex: 0xF5F7F8)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x070D32) : UIColor(hex: 0xF5F7FF)
     })
     static let surface = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x111A1E) : .white
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x101A4B) : .white
     })
     static let raised = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x18242A) : UIColor(hex: 0xE9EEF0)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x182660) : UIColor(hex: 0xE8ECFF)
     })
 
     static let textPrimary = Color(uiColor: .label)
     static let textSecondary = Color(uiColor: .secondaryLabel)
-    // Foreground colours have separate light and dark variants so their contrast
-    // remains suitable on Barabari's surface and raised backgrounds.
+    // Accent foregrounds have separate variants so a filled control remains
+    // readable in both appearances.
     static let accent = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x5FD6D2) : UIColor(hex: 0x006C77)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8D9AFF) : UIColor(hex: 0x3045D6)
+    })
+    static let onAccent = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x070D32) : .white
     })
     static let success = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x64D5A3) : UIColor(hex: 0x16724D)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x98F0C2) : UIColor(hex: 0x16724D)
     })
     static let warning = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark ? UIColor(hex: 0xF0B45B) : UIColor(hex: 0x9C5600)

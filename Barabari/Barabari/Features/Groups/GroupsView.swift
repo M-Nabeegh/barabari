@@ -97,7 +97,7 @@ struct GroupsView: View {
                         .contentShape(Circle())
                 }
                 .accessibilityLabel("Create group")
-                .foregroundStyle(.white)
+                .foregroundStyle(BarabariColors.onAccent)
                 .background(BarabariColors.accent, in: Circle())
             }
 

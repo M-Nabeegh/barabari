@@ -156,7 +156,7 @@ struct AddExpenseView: View {
                     .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .buttonStyle(.plain)
-            .foregroundStyle(.white)
+            .foregroundStyle(BarabariColors.onAccent)
             .background(BarabariColors.accent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .disabled(viewModel.isSaving)
             .accessibilityLabel("Save expense")

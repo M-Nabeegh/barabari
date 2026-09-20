@@ -107,7 +107,7 @@ struct SettlementView: View {
                             .font(.system(.body, design: .rounded, weight: .semibold))
                             .frame(maxWidth: .infinity, minHeight: max(46, BarabariInteraction.minimumHitSize))
                             .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                            .foregroundStyle(viewModel.method == method ? Color.white : BarabariColors.textPrimary)
+                            .foregroundStyle(viewModel.method == method ? BarabariColors.onAccent : BarabariColors.textPrimary)
                             .background(
                                 viewModel.method == method ? BarabariColors.accent : BarabariColors.surface,
                                 in: RoundedRectangle(cornerRadius: 14, style: .continuous)

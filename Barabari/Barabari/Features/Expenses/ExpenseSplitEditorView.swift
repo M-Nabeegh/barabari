@@ -18,7 +18,7 @@ struct ExpenseSplitEditorView: View {
                     .font(.system(.subheadline, design: .rounded, weight: .semibold))
                     .frame(maxWidth: .infinity, minHeight: 44)
                     .contentShape(Capsule())
-                    .foregroundStyle(viewModel.splitSelection == selection ? .white : BarabariColors.accent)
+                    .foregroundStyle(viewModel.splitSelection == selection ? BarabariColors.onAccent : BarabariColors.accent)
                     .background(
                         viewModel.splitSelection == selection ? BarabariColors.accent : BarabariColors.raised,
                         in: Capsule()
