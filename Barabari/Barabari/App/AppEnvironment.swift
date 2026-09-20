@@ -1,10 +1,12 @@
 import Foundation
 import SwiftData
 
+private let barabariDefaultUserID = UUID(uuidString: "56D75B9A-0238-45B6-9EF7-A3526D58B2A5")!
+
 /// Composes persistence at the app boundary so SwiftUI features depend on repositories, never SwiftData models.
 @MainActor
 struct AppEnvironment {
-    static let demoUserID = UUID(uuidString: "56D75B9A-0238-45B6-9EF7-A3526D58B2A5")!
+    static let demoUserID = barabariDefaultUserID
 
     let modelContainer: ModelContainer
     let groupRepository: LocalGroupRepository
@@ -20,7 +22,7 @@ struct AppEnvironment {
     init(
         inMemory: Bool,
         seedDemoData: Bool = false,
-        currentUserID: UUID = AppEnvironment.demoUserID,
+        currentUserID: UUID = barabariDefaultUserID,
         isOffline: Bool = false
     ) {
         do {
