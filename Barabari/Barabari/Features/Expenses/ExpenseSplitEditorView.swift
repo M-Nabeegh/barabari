@@ -53,9 +53,11 @@ struct ExpenseSplitEditorView: View {
                             .background(BarabariColors.raised, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .accessibilityLabel("Exact share for \(viewModel.memberName(for: memberID))")
                             .accessibilityIdentifier("exact-split-amount-\(memberID.uuidString)")
+                            .id(AddExpenseScrollAnchor.exactShare(memberID))
                         }
                     }
                 }
+                .id(AddExpenseScrollAnchor.exactShares)
             }
 
             if viewModel.splitSelection == .exact,

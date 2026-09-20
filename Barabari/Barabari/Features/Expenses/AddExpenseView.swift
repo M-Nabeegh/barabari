@@ -6,6 +6,11 @@ enum AddExpenseFocusedField: Hashable {
     case exact(UUID)
 }
 
+enum AddExpenseScrollAnchor: Hashable {
+    case exactShares
+    case exactShare(UUID)
+}
+
 struct AddExpenseView: View {
 
     @StateObject private var viewModel: AddExpenseViewModel
@@ -16,26 +21,36 @@ struct AddExpenseView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: BarabariSpacing.section) {
-                if let expense = viewModel.savedExpense {
-                    confirmation(expense)
-                } else if viewModel.isLoading {
-                    ProgressView("Loading your groups")
-                        .frame(maxWidth: .infinity, minHeight: 240)
-                } else if viewModel.groups.isEmpty {
-                    ContentUnavailableView(
-                        "Create a group first",
-                        systemImage: "person.2.fill",
-                        description: Text("Expenses always belong to a shared group.")
-                    )
-                } else {
-                    form
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: BarabariSpacing.section) {
+                    if let expense = viewModel.savedExpense {
+                        confirmation(expense)
+                    } else if viewModel.isLoading {
+                        ProgressView("Loading your groups")
+                            .frame(maxWidth: .infinity, minHeight: 240)
+                    } else if viewModel.groups.isEmpty {
+                        ContentUnavailableView(
+                            "Create a group first",
+                            systemImage: "person.2.fill",
+                            description: Text("Expenses always belong to a shared group.")
+                        )
+                    } else {
+                        form
+                    }
                 }
+                .padding(BarabariSpacing.screen)
+                .padding(.bottom, 92)
+                .id(viewModel.savedExpense?.id)
             }
-            .padding(BarabariSpacing.screen)
-            .padding(.bottom, 92)
-            .id(viewModel.savedExpense?.id)
+            .onChange(of: viewModel.splitSelection) { _, selection in
+                guard selection == .exact else { return }
+                scrollToExactShares(using: scrollProxy)
+            }
+            .onChange(of: focusedField) { _, field in
+                guard case let .exact(memberID) = field else { return }
+                scrollToExactShare(memberID, using: scrollProxy)
+            }
         }
         .background(BarabariColors.background)
         .navigationTitle("Add expense")
@@ -47,6 +62,24 @@ struct AddExpenseView: View {
             }
         }
         .task { await viewModel.load() }
+    }
+
+    private func scrollToExactShares(using proxy: ScrollViewProxy) {
+        Task { @MainActor in
+            await Task.yield()
+            withAnimation(.snappy) {
+                proxy.scrollTo(AddExpenseScrollAnchor.exactShares, anchor: .center)
+            }
+        }
+    }
+
+    private func scrollToExactShare(_ memberID: UUID, using proxy: ScrollViewProxy) {
+        Task { @MainActor in
+            await Task.yield()
+            withAnimation(.snappy) {
+                proxy.scrollTo(AddExpenseScrollAnchor.exactShare(memberID), anchor: .center)
+            }
+        }
     }
 
     private var form: some View {
