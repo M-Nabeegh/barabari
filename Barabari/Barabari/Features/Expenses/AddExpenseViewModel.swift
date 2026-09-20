@@ -43,10 +43,16 @@ final class AddExpenseViewModel: ObservableObject {
     @Published private(set) var savedExpense: Expense?
 
     private let environment: AppEnvironment
+    private let memberLoader: (UUID) async throws -> [GroupMember]
     private var exactAmountTexts: [UUID: String] = [:]
+    private var memberLoadTask: Task<Void, Never>?
+    private var memberLoadGeneration = 0
 
-    init(environment: AppEnvironment) {
+    init(environment: AppEnvironment, memberLoader: ((UUID) async throws -> [GroupMember])? = nil) {
         self.environment = environment
+        self.memberLoader = memberLoader ?? { groupID in
+            try await environment.groupRepository.members(groupID: groupID)
+        }
     }
 
     func load() async {
@@ -58,7 +64,8 @@ final class AddExpenseViewModel: ObservableObject {
             if selectedGroupID == nil || !groups.contains(where: { $0.id == selectedGroupID }) {
                 selectedGroupID = groups.first?.id
             }
-            await loadMembersForSelectedGroup()
+            beginMemberLoad(for: selectedGroupID)
+            await memberLoadTask?.value
         } catch {
             validationMessage = "We could not load your groups. Try again."
         }
@@ -67,7 +74,7 @@ final class AddExpenseViewModel: ObservableObject {
     func selectGroup(_ id: UUID) {
         guard selectedGroupID != id else { return }
         selectedGroupID = id
-        Task { await loadMembersForSelectedGroup() }
+        beginMemberLoad(for: id)
     }
 
     func selectSplit(_ selection: ExpenseSplitSelection) {
@@ -135,8 +142,19 @@ final class AddExpenseViewModel: ObservableObject {
         }
     }
 
-    private func loadMembersForSelectedGroup() async {
-        guard let selectedGroupID else {
+    private func beginMemberLoad(for groupID: UUID?) {
+        memberLoadTask?.cancel()
+        memberLoadGeneration &+= 1
+        let generation = memberLoadGeneration
+        memberLoadTask = Task { [weak self] in
+            guard let self else { return }
+            await self.loadMembers(for: groupID, generation: generation)
+        }
+    }
+
+    private func loadMembers(for groupID: UUID?, generation: Int) async {
+        guard let groupID else {
+            guard generation == memberLoadGeneration else { return }
             members = []
             participantIDs = []
             payerID = nil
@@ -144,7 +162,9 @@ final class AddExpenseViewModel: ObservableObject {
         }
 
         do {
-            members = try await environment.groupRepository.members(groupID: selectedGroupID).filter(\.isActive)
+            let loadedMembers = try await memberLoader(groupID).filter(\.isActive)
+            guard !Task.isCancelled, generation == memberLoadGeneration, selectedGroupID == groupID else { return }
+            members = loadedMembers
             let memberIDs = members.map(\.userID)
             participantIDs = participantIDs.filter(memberIDs.contains)
             if participantIDs.isEmpty { participantIDs = memberIDs }
@@ -155,6 +175,7 @@ final class AddExpenseViewModel: ObservableObject {
             splitMethod = splitMethodForCurrentInputs()
             refreshPreview()
         } catch {
+            guard !Task.isCancelled, generation == memberLoadGeneration, selectedGroupID == groupID else { return }
             members = []
             participantIDs = []
             payerID = nil

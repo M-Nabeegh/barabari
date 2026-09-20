@@ -2,17 +2,32 @@ import Foundation
 import SwiftUI
 
 enum AmountFormatter {
+    private static let formatterCache = NSCache<NSString, NumberFormatter>()
+    private static let formatterLock = NSLock()
+
     static func string(minorUnits: Int64, currencyCode: String) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode.uppercased()
-        formatter.currencySymbol = currencyCode.uppercased() == "PKR" ? "PKR" : currencyCode.uppercased()
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        formatter.locale = Locale(identifier: "en_PK")
+        let normalizedCurrency = currencyCode.uppercased()
+        let cacheKey = "\(normalizedCurrency)|en_PK" as NSString
+        formatterLock.lock()
+        defer { formatterLock.unlock() }
+
+        let formatter: NumberFormatter
+        if let cached = formatterCache.object(forKey: cacheKey) {
+            formatter = cached
+        } else {
+            let created = NumberFormatter()
+            created.numberStyle = .currency
+            created.currencyCode = normalizedCurrency
+            created.currencySymbol = normalizedCurrency == "PKR" ? "PKR" : normalizedCurrency
+            created.minimumFractionDigits = 0
+            created.maximumFractionDigits = 2
+            created.locale = Locale(identifier: "en_PK")
+            formatterCache.setObject(created, forKey: cacheKey)
+            formatter = created
+        }
 
         let amount = Decimal(minorUnits) / 100
-        return formatter.string(from: amount as NSDecimalNumber) ?? "\(currencyCode.uppercased()) 0"
+        return formatter.string(from: amount as NSDecimalNumber) ?? "\(normalizedCurrency) 0"
     }
 }
 
@@ -35,11 +50,12 @@ struct AmountText: View {
     }
 
     var body: some View {
-        Text(AmountFormatter.string(minorUnits: minorUnits, currencyCode: currencyCode))
+        let displayValue = AmountFormatter.string(minorUnits: minorUnits, currencyCode: currencyCode)
+        return Text(displayValue)
             .font(BarabariTypography.amount(for: style))
             .monospacedDigit()
             .foregroundStyle(BarabariColors.textPrimary)
-            .accessibilityLabel("\(AmountFormatter.string(minorUnits: minorUnits, currencyCode: currencyCode))")
+            .accessibilityLabel(displayValue)
     }
 }
 

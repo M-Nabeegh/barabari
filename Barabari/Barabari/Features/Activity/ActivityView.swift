@@ -1,31 +1,20 @@
 import SwiftUI
 
-private struct ActivityRow: Identifiable {
-    let event: ActivityEvent
-    let expense: Expense?
-    let settlement: Settlement?
-
-    var id: UUID { event.id }
-}
-
-private enum ActivityLoadingState {
-    case loading
-    case loaded([ActivityRow])
-    case empty
-    case failed(String)
-}
-
 struct ActivityView: View {
-    let environment: AppEnvironment
     let revision: Int
 
-    @State private var state: ActivityLoadingState = .loading
+    @StateObject private var viewModel: ActivityViewModel
+
+    init(environment: AppEnvironment, revision: Int) {
+        self.revision = revision
+        _viewModel = StateObject(wrappedValue: ActivityViewModel(environment: environment))
+    }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: BarabariSpacing.section) {
-                switch state {
-                case .loading:
+            LazyVStack(alignment: .leading, spacing: BarabariSpacing.section) {
+                switch viewModel.state {
+                case .idle, .loading:
                     ProgressView("Loading activity")
                         .frame(maxWidth: .infinity, minHeight: 240)
                 case .empty:
@@ -35,10 +24,18 @@ struct ActivityView: View {
                         description: Text("Expenses and settlements will appear here.")
                     )
                     .frame(maxWidth: .infinity, minHeight: 300)
-                case let .loaded(rows):
+                case .loaded:
                     header
-                    ForEach(rows) { row in
+                    ForEach(viewModel.rows) { row in
                         activityRow(row)
+                            .onAppear {
+                                Task { await viewModel.loadNextPageIfNeeded(lastID: row.id) }
+                            }
+                    }
+                    if viewModel.isLoadingNextPage {
+                        ProgressView("Loading more")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, BarabariSpacing.compact)
                     }
                 case let .failed(message):
                     VStack(alignment: .leading, spacing: BarabariSpacing.row) {
@@ -47,7 +44,7 @@ struct ActivityView: View {
                         Text(message)
                             .foregroundStyle(BarabariColors.textSecondary)
                         PrimaryActionButton("Try again") {
-                            Task { await load() }
+                            Task { await viewModel.load() }
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: 260, alignment: .center)
@@ -59,8 +56,8 @@ struct ActivityView: View {
         .background(BarabariColors.background)
         .navigationTitle("Activity")
         .navigationBarTitleDisplayMode(.large)
-        .task(id: revision) { await load() }
-        .refreshable { await load() }
+        .task(id: revision) { await viewModel.load() }
+        .refreshable { await viewModel.load() }
     }
 
     private var header: some View {
@@ -99,58 +96,6 @@ struct ActivityView: View {
                 }
             }
         }
-    }
-
-    private func load() async {
-        state = .loading
-        do {
-            let groups = try await environment.groupRepository.listGroups()
-            var activity: [ActivityEvent] = []
-            var expenses: [UUID: Expense] = [:]
-            var settlements: [UUID: Settlement] = [:]
-            for group in groups {
-                activity += try await environment.activity(groupID: group.id)
-                for expense in try await allExpenses(groupID: group.id) {
-                    expenses[expense.id] = expense
-                }
-                for settlement in try await allSettlements(groupID: group.id) {
-                    settlements[settlement.id] = settlement
-                }
-            }
-            let rows = activity
-                .filter { $0.deletedAt == nil }
-                .sorted { lhs, rhs in
-                    lhs.occurredAt == rhs.occurredAt
-                        ? lhs.id.uuidString < rhs.id.uuidString
-                        : lhs.occurredAt > rhs.occurredAt
-                }
-                .map { ActivityRow(event: $0, expense: expenses[$0.subjectID], settlement: settlements[$0.subjectID]) }
-            state = rows.isEmpty ? .empty : .loaded(rows)
-        } catch {
-            state = .failed(error.localizedDescription)
-        }
-    }
-
-    private func allExpenses(groupID: UUID) async throws -> [Expense] {
-        var cursor: String?
-        var expenses: [Expense] = []
-        repeat {
-            let page = try await environment.expenseRepository.listExpenses(groupID: groupID, cursor: cursor)
-            expenses += page.items
-            cursor = page.nextCursor
-        } while cursor != nil
-        return expenses
-    }
-
-    private func allSettlements(groupID: UUID) async throws -> [Settlement] {
-        var cursor: String?
-        var settlements: [Settlement] = []
-        repeat {
-            let page = try await environment.settlementRepository.listSettlements(groupID: groupID, cursor: cursor)
-            settlements += page.items
-            cursor = page.nextCursor
-        } while cursor != nil
-        return settlements
     }
 
     private func title(for row: ActivityRow) -> String {

@@ -3,6 +3,38 @@ import XCTest
 
 @MainActor
 final class AddExpenseViewModelTests: XCTestCase {
+    func testSelectingAnotherGroupIgnoresThePreviousGroupThatFinishesLater() async throws {
+        let environment = AppEnvironment(inMemory: true)
+        let firstGroup = try await environment.groupRepository.createGroup(
+            name: "First group",
+            description: nil,
+            ownerID: environment.currentUserID
+        )
+        let secondGroup = try await environment.groupRepository.createGroup(
+            name: "Second group",
+            description: nil,
+            ownerID: environment.currentUserID
+        )
+        let firstMember = GroupMember(groupID: firstGroup.id, userID: environment.currentUserID, role: .owner)
+        let secondMember = GroupMember(groupID: secondGroup.id, userID: environment.currentUserID, role: .owner)
+
+        let viewModel = AddExpenseViewModel(environment: environment) { groupID in
+            if groupID == secondGroup.id {
+                try await Task.sleep(nanoseconds: 100_000_000)
+                return [secondMember]
+            }
+            return [firstMember]
+        }
+        await viewModel.load()
+
+        viewModel.selectGroup(secondGroup.id)
+        viewModel.selectGroup(firstGroup.id)
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        XCTAssertEqual(viewModel.selectedGroupID, firstGroup.id)
+        XCTAssertEqual(viewModel.members.map(\.groupID), [firstGroup.id])
+    }
+
     func testEqualExpenseSavesToLocalLedgerInDemoMode() async {
         let viewModel = AddExpenseViewModel(environment: .demo)
         await viewModel.load()
