@@ -84,6 +84,34 @@ final class GroupInviteTests: XCTestCase {
         }
     }
 
+    func testHostileInviteAuthorityAndControlCharactersFailClosed() {
+        let query = "v=1&group=00000000-0000-0000-0000-000000000123&name=Trip&revision=1"
+        assertInviteError(
+            URL(string: "barabari://user:password@join?\(query)")!,
+            equals: .invalidAuthority
+        )
+        assertInviteError(
+            URL(string: "barabari://join:443?\(query)")!,
+            equals: .invalidAuthority
+        )
+        assertInviteError(
+            URL(string: "barabari://join/path?\(query)")!,
+            equals: .invalidAuthority
+        )
+        assertInviteError(
+            URL(string: "barabari://join?\(query)#fragment")!,
+            equals: .invalidAuthority
+        )
+        assertInviteError(
+            URL(string: "barabari://jo%69n?\(query)")!,
+            equals: .invalidAuthority
+        )
+        assertInviteError(
+            URL(string: "barabari://join?v=1&group=00000000-0000-0000-0000-000000000123&name=Trip%0A&revision=1")!,
+            equals: .invalidControlCharacter
+        )
+    }
+
     func testGroupJoinOutcomeCarriesTheExpectedDomainValue() {
         let group = Group(name: "Trip", description: nil, ownerID: groupID)
         let payload = GroupInvitePayload(version: 1, groupID: group.id, groupName: group.name, groupRevision: group.revision)

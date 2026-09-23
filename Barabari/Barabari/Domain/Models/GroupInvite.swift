@@ -25,6 +25,8 @@ enum GroupJoinOutcome: Equatable, Sendable {
 enum GroupInviteError: Error, Equatable, Sendable {
     case invalidScheme
     case invalidHost
+    case invalidAuthority
+    case invalidControlCharacter
     case invalidURL
     case missingVersion
     case invalidVersion

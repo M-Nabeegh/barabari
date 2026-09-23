@@ -6,6 +6,58 @@ final class SwiftDataRepositoryTests: XCTestCase {
     private let ownerID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
     private let memberID = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
 
+    // Catches a join implementation that creates duplicate memberships or duplicate activity on replay.
+    func testLocalInviteJoinIsIdempotentAndRecordsMemberActivity() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let repository = LocalGroupRepository(container: container)
+        let group = try await repository.createGroup(name: "Flat 404", description: nil, ownerID: ownerID)
+        let invite = try await repository.invitePayload(groupID: group.id)
+
+        XCTAssertEqual(
+            invite,
+            GroupInvitePayload(
+                version: GroupInvitePayload.currentVersion,
+                groupID: group.id,
+                groupName: group.name,
+                groupRevision: group.revision
+            )
+        )
+
+        let first = try await repository.joinGroup(invite: invite, userID: memberID)
+        let second = try await repository.joinGroup(invite: invite, userID: memberID)
+        let membersAfterJoin = try await repository.members(groupID: group.id)
+        let joinActivities = try await repository.activities(groupID: group.id)
+
+        XCTAssertEqual(first, .joined(group))
+        XCTAssertEqual(second, .alreadyMember(group))
+        XCTAssertEqual(membersAfterJoin.filter(\.isActive).count, 2)
+        XCTAssertEqual(membersAfterJoin.filter { $0.userID == memberID && $0.isActive }.count, 1)
+        XCTAssertEqual(joinActivities.filter { $0.kind == .memberJoined }.count, 1)
+    }
+
+    // Catches a join implementation that creates a phantom group for an invite unknown to this local store.
+    func testLocalInviteJoinReturnsUnavailableWithoutPersistingAnything() async throws {
+        let container = try BarabariModelContainer.make(inMemory: true)
+        let repository = LocalGroupRepository(container: container)
+        let missingGroupID = UUID(uuidString: "00000000-0000-0000-0000-000000000999")!
+        let invite = GroupInvitePayload(
+            version: GroupInvitePayload.currentVersion,
+            groupID: missingGroupID,
+            groupName: "Shared trip",
+            groupRevision: 1
+        )
+
+        let outcome = try await repository.joinGroup(invite: invite, userID: memberID)
+        let groupsAfterJoin = try await repository.listGroups()
+        let membersAfterJoin = try await repository.members(groupID: missingGroupID)
+        let activitiesAfterJoin = try await repository.activities(groupID: missingGroupID)
+
+        XCTAssertEqual(outcome, .unavailable(invite))
+        XCTAssertTrue(groupsAfterJoin.isEmpty)
+        XCTAssertTrue(membersAfterJoin.isEmpty)
+        XCTAssertTrue(activitiesAfterJoin.isEmpty)
+    }
+
     // Catches a persistence layer that drops ledger records or changes their stable IDs.
     func testInMemoryRepositoriesPersistGroupExpenseSettlementAndActivity() async throws {
         let container = try BarabariModelContainer.make(inMemory: true)

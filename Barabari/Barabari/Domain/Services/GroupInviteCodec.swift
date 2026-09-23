@@ -24,18 +24,31 @@ enum GroupInviteCodec {
     }
 
     static func payload(from url: URL) throws -> GroupInvitePayload {
-        guard url.scheme == scheme else {
-            throw GroupInviteError.invalidScheme
-        }
-        guard url.host == host else {
-            throw GroupInviteError.invalidHost
-        }
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             throw GroupInviteError.invalidURL
+        }
+        try validateControlCharacters(in: components)
+        guard components.scheme == scheme else {
+            throw GroupInviteError.invalidScheme
+        }
+        guard components.host == host else {
+            throw GroupInviteError.invalidHost
+        }
+        guard components.percentEncodedHost == host,
+              components.user == nil,
+              components.password == nil,
+              components.port == nil,
+              components.path.isEmpty,
+              components.fragment == nil,
+              authorityPrefix(of: url) == "\(scheme)://\(host)" else {
+            throw GroupInviteError.invalidAuthority
         }
 
         var values: [String: String] = [:]
         for item in components.queryItems ?? [] {
+            if containsControlCharacters(item.name) || item.value.map(containsControlCharacters) == true {
+                throw GroupInviteError.invalidControlCharacter
+            }
             guard isSupportedQueryKey(item.name) else {
                 throw GroupInviteError.unexpectedQueryItem(item.name)
             }
@@ -96,6 +109,9 @@ enum GroupInviteCodec {
     }
 
     private static func validateName(_ name: String) throws {
+        guard !containsControlCharacters(name) else {
+            throw GroupInviteError.invalidControlCharacter
+        }
         guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw GroupInviteError.emptyName
         }
@@ -106,5 +122,28 @@ enum GroupInviteCodec {
 
     private static func isSupportedQueryKey(_ key: String) -> Bool {
         key == "v" || key == "group" || key == "name" || key == "revision"
+    }
+
+    private static func validateControlCharacters(in components: URLComponents) throws {
+        let authorityAndPath = [
+            components.scheme,
+            components.host,
+            components.percentEncodedHost,
+            components.user,
+            components.password,
+            components.path,
+            components.fragment
+        ]
+        guard !authorityAndPath.compactMap({ $0 }).contains(where: containsControlCharacters) else {
+            throw GroupInviteError.invalidControlCharacter
+        }
+    }
+
+    private static func containsControlCharacters(_ value: String) -> Bool {
+        value.unicodeScalars.contains { CharacterSet.controlCharacters.contains($0) }
+    }
+
+    private static func authorityPrefix(of url: URL) -> String {
+        String(url.absoluteString.prefix { $0 != "?" && $0 != "#" })
     }
 }
