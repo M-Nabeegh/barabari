@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BarabariTabBar: View {
     @Binding private var selection: AppTab
+    @Namespace private var selectionNamespace
 
     init(selection: Binding<AppTab>) {
         _selection = selection
@@ -35,7 +36,9 @@ struct BarabariTabBar: View {
         HStack(spacing: 2) {
             ForEach(AppTab.allCases) { tab in
                 Button {
-                    selection = tab
+                    withAnimation(.snappy(duration: 0.28, extraBounce: 0.05)) {
+                        selection = tab
+                    }
                 } label: {
                     VStack(spacing: 4) {
                         Image(systemName: tab.systemImage)
@@ -48,6 +51,13 @@ struct BarabariTabBar: View {
                     }
                     .frame(maxWidth: .infinity, minHeight: 48)
                     .contentShape(Rectangle())
+                    .background {
+                        if selection == tab {
+                            Capsule()
+                                .fill(BarabariColors.accent.opacity(0.10))
+                                .matchedGeometryEffect(id: "selected-tab", in: selectionNamespace)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(selection == tab ? BarabariColors.accent : BarabariColors.textSecondary)

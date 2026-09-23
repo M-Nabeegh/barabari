@@ -3,6 +3,7 @@ import UIKit
 
 struct JoinGroupView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var viewModel: JoinGroupViewModel
     @State private var isPresentingScanner = false
     @FocusState private var isLinkFieldFocused: Bool
@@ -36,6 +37,10 @@ struct JoinGroupView: View {
             }
         }
         .task { await viewModel.parseAndLoad() }
+        .animation(
+            reduceMotion ? nil : .snappy(duration: 0.35, extraBounce: 0.02),
+            value: viewModel.state
+        )
         .sheet(isPresented: $isPresentingScanner) {
             NavigationStack {
                 QRCodeScannerView(

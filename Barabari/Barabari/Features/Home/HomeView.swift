@@ -4,7 +4,8 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     let revision: Int
     let showGroups: () -> Void
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hasRevealed = false
 
     var body: some View {
         ScrollView {
@@ -29,6 +30,12 @@ struct HomeView: View {
         .navigationBarTitleDisplayMode(.large)
         .task(id: revision) { await viewModel.refresh() }
         .refreshable { await viewModel.refresh() }
+        .onAppear { revealHomeIfReady() }
+        .onChange(of: viewModel.homeState) { _, newState in
+            guard newState != .loading else { return }
+            hasRevealed = false
+            revealHomeIfReady()
+        }
     }
 
     private var loadingView: some View {
@@ -44,6 +51,9 @@ struct HomeView: View {
     private var emptyView: some View {
         VStack(alignment: .leading, spacing: BarabariSpacing.section) {
             VStack(alignment: .leading, spacing: BarabariSpacing.compact) {
+                Image(systemName: "equal.circle.fill")
+                    .font(.system(size: 42, weight: .medium))
+                    .foregroundStyle(BarabariColors.brandMint)
                 Text("Split fairly.")
                     .font(BarabariTypography.screenTitle)
                 Text("Create a group for your flat, trip, or weekend plans. Barabari keeps the math calm and clear.")
@@ -64,39 +74,53 @@ struct HomeView: View {
                     .accessibilityIdentifier("offline-home-status")
             }
 
-            BarabariCard {
-                VStack(alignment: .leading, spacing: BarabariSpacing.row) {
-                    Text("Your balance")
-                        .font(BarabariTypography.metadata)
-                        .foregroundStyle(BarabariColors.textSecondary)
-                    AmountText(
-                        minorUnits: snapshot.amountOwed.minorUnits - snapshot.amountOwing.minorUnits,
-                        currencyCode: "PKR",
-                        style: .hero
-                    )
-                    Text(balanceSummary(for: snapshot))
-                        .font(BarabariTypography.body)
-                        .foregroundStyle(BarabariColors.textSecondary)
-                }
-            }
+            balanceHero(snapshot)
 
-            VStack(alignment: .leading, spacing: BarabariSpacing.row) {
-                Text("At a glance")
-                    .font(BarabariTypography.sectionTitle)
-                if dynamicTypeSize.isAccessibilitySize {
-                    VStack(spacing: BarabariSpacing.row) {
-                        balanceMetric("You are owed", amount: snapshot.amountOwed, color: BarabariColors.success)
-                        balanceMetric("You owe", amount: snapshot.amountOwing, color: BarabariColors.danger)
-                    }
-                } else {
-                    HStack(spacing: BarabariSpacing.row) {
-                        balanceMetric("You are owed", amount: snapshot.amountOwed, color: BarabariColors.success)
-                        balanceMetric("You owe", amount: snapshot.amountOwing, color: BarabariColors.danger)
-                    }
-                }
-            }
+            PrimaryActionButton("Open groups", action: showGroups)
+                .accessibilityIdentifier("home-see-groups")
 
             recentActivity(snapshot.recentActivity)
+        }
+        .opacity(hasRevealed ? 1 : 0)
+        .offset(y: hasRevealed ? 0 : 10)
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
+    }
+
+    private func balanceHero(_ snapshot: HomeSnapshot) -> some View {
+        BarabariCard {
+            VStack(alignment: .leading, spacing: BarabariSpacing.row) {
+                HStack {
+                    Text("NET POSITION")
+                        .font(.system(.caption2, design: .rounded, weight: .bold))
+                        .tracking(1.4)
+                        .foregroundStyle(BarabariColors.textSecondary)
+                    Spacer()
+                    StatusBadge("LOCAL", style: .success)
+                }
+
+                AmountText(
+                    minorUnits: snapshot.amountOwed.minorUnits - snapshot.amountOwing.minorUnits,
+                    currencyCode: "PKR",
+                    style: .hero
+                )
+
+                Text(balanceSummary(for: snapshot))
+                    .font(BarabariTypography.body)
+                    .foregroundStyle(BarabariColors.textSecondary)
+
+                Divider()
+
+                HStack(spacing: BarabariSpacing.row) {
+                    balanceMetric("You are owed", amount: snapshot.amountOwed, color: BarabariColors.success)
+                    balanceMetric("You owe", amount: snapshot.amountOwing, color: BarabariColors.danger)
+                }
+            }
+        }
+        .overlay(alignment: .leading) {
+            Capsule()
+                .fill(BarabariColors.brandMint)
+                .frame(width: 4)
+                .padding(.vertical, 18)
         }
     }
 
@@ -161,6 +185,24 @@ struct HomeView: View {
         case (0, 0): "You are all settled up."
         case let (owed, owing) where owed >= owing: "You are owed more than you owe."
         default: "You owe more than you are owed."
+        }
+    }
+
+    private func revealHomeIfReady() {
+        switch viewModel.homeState {
+        case .loaded, .offline, .empty:
+            break
+        case .loading, .failed:
+            return
+        }
+
+        guard !hasRevealed else { return }
+        if reduceMotion {
+            hasRevealed = true
+        } else {
+            withAnimation(.easeOut(duration: 0.45)) {
+                hasRevealed = true
+            }
         }
     }
 

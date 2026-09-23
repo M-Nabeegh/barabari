@@ -4,15 +4,19 @@ struct GroupDetailView: View {
     private let environment: AppEnvironment
     private let revision: Int
     private let onChanged: () -> Void
+    private let onInvite: () -> Void
     @StateObject private var viewModel: GroupDetailViewModel
     @State private var selectedTransfer: BalanceTransfer?
     @State private var selectedGroupID: UUID?
     @State private var isPresentingSettlement = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hasRevealedContent = false
 
-    init(environment: AppEnvironment, groupID: UUID, revision: Int, onChanged: @escaping () -> Void) {
+    init(environment: AppEnvironment, groupID: UUID, revision: Int, onChanged: @escaping () -> Void, onInvite: @escaping () -> Void = {}) {
         self.environment = environment
         self.revision = revision
         self.onChanged = onChanged
+        self.onInvite = onInvite
         _viewModel = StateObject(wrappedValue: GroupDetailViewModel(environment: environment, groupID: groupID))
     }
 
@@ -36,8 +40,24 @@ struct GroupDetailView: View {
         }
         .navigationTitle(groupTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    onInvite()
+                } label: {
+                    Label("Invite", systemImage: "person.badge.plus")
+                }
+                .accessibilityIdentifier("invite-group")
+            }
+        }
         .task(id: revision) { await viewModel.refresh() }
         .refreshable { await viewModel.refresh() }
+        .onAppear { revealContentIfReady() }
+        .onChange(of: viewModel.state) { _, newState in
+            guard newState != .loading else { return }
+            hasRevealedContent = false
+            revealContentIfReady()
+        }
         .onChange(of: isPresentingSettlement) { _, isPresenting in
             guard !isPresenting else { return }
             Task { await viewModel.refresh() }
@@ -123,6 +143,9 @@ struct GroupDetailView: View {
                 }
             }
         }
+        .opacity(hasRevealedContent ? 1 : 0)
+        .offset(y: hasRevealedContent ? 0 : 10)
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
     }
 
     private func error(_ message: String) -> some View {
@@ -162,6 +185,24 @@ struct GroupDetailView: View {
         case .settlementRecorded: "Settlement recorded"
         case .memberJoined: "Member joined"
         case .memberRemoved: "Member removed"
+        }
+    }
+
+    private func revealContentIfReady() {
+        switch viewModel.state {
+        case .loaded, .offline:
+            break
+        case .loading, .failed:
+            return
+        }
+
+        guard !hasRevealedContent else { return }
+        if reduceMotion {
+            hasRevealedContent = true
+        } else {
+            withAnimation(.easeOut(duration: 0.4)) {
+                hasRevealedContent = true
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ final class SettingsViewModel: ObservableObject {
 
     init(environment: AppEnvironment) {
         self.environment = environment
-        appearance = BarabariAppearance(rawValue: UserDefaults.standard.string(forKey: Self.appearanceUserDefaultsKey) ?? "system") ?? .system
+        appearance = BarabariAppearance(rawValue: UserDefaults.standard.string(forKey: Self.appearanceUserDefaultsKey) ?? "dark") ?? .dark
         hapticsEnabled = UserDefaults.standard.object(forKey: BarabariInteraction.hapticsUserDefaultsKey) as? Bool ?? true
     }
 

@@ -3,6 +3,7 @@ import UIKit
 
 struct GroupInviteView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var viewModel: GroupInviteViewModel
     @State private var didCopy = false
 
@@ -38,12 +39,16 @@ struct GroupInviteView: View {
             }
         }
         .task { await viewModel.load() }
+        .animation(
+            reduceMotion ? nil : .snappy(duration: 0.35, extraBounce: 0.02),
+            value: viewModel.state
+        )
     }
 
     @ViewBuilder
     private func inviteContent(payload: GroupInvitePayload, link: URL) -> some View {
         VStack(alignment: .leading, spacing: BarabariSpacing.compact) {
-            Text("Invite to (payload.groupName)")
+            Text("Invite to \(payload.groupName)")
                 .font(BarabariTypography.screenTitle)
             Text("Share this link or let someone scan the code to join this local ledger.")
                 .font(BarabariTypography.body)
@@ -52,6 +57,7 @@ struct GroupInviteView: View {
 
         InviteQRCodeImage(url: link)
             .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
             .accessibilityIdentifier("invite-qr")
 
         BarabariCard {
@@ -87,6 +93,7 @@ struct GroupInviteView: View {
         Label("Local demo: this invite works when the group is already in Barabari on this iPhone. Cloud sync comes later.", systemImage: "iphone")
             .font(BarabariTypography.metadata)
             .foregroundStyle(BarabariColors.textSecondary)
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
     }
 
     private func failure(_ message: String) -> some View {

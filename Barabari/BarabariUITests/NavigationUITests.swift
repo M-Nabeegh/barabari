@@ -40,7 +40,7 @@ final class NavigationUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["No groups yet"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["Create group"].exists)
-        XCTAssertFalse(app.buttons["Join group"].exists)
+        XCTAssertTrue(app.buttons["Join group"].exists)
     }
 
     func testActivityRowsOpenDetailAndSettingsShowsWorkingLocalActions() {

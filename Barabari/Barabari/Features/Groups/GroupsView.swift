@@ -5,8 +5,11 @@ struct GroupsView: View {
     let revision: Int
     let onChanged: () -> Void
     let selectGroup: (Group) -> Void
+    let onJoin: () -> Void
 
     @State private var isPresentingCreateGroup = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hasRevealedGroups = false
 
     var body: some View {
         ScrollView {
@@ -29,6 +32,8 @@ struct GroupsView: View {
         .navigationBarTitleDisplayMode(.large)
         .task(id: revision) { await viewModel.refresh() }
         .refreshable { await viewModel.refresh() }
+        .onAppear { revealGroupsIfReady() }
+        .onChange(of: viewModel.state) { _, _ in revealGroupsIfReady() }
         .sheet(isPresented: $isPresentingCreateGroup) {
             CreateGroupSheet { name, description in
                 guard let group = await viewModel.createGroup(name: name, description: description) else {
@@ -66,8 +71,20 @@ struct GroupsView: View {
                     .foregroundStyle(BarabariColors.textSecondary)
             }
 
-            PrimaryActionButton("Create group") {
-                isPresentingCreateGroup = true
+            VStack(spacing: BarabariSpacing.row) {
+                PrimaryActionButton("Create group") {
+                    isPresentingCreateGroup = true
+                }
+
+                Button {
+                    onJoin()
+                } label: {
+                    Label("Join group", systemImage: "person.2.badge.plus")
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                }
+                .buttonStyle(.bordered)
+                .tint(BarabariColors.accent)
+                .accessibilityIdentifier("join-group")
             }
         }
         .frame(maxWidth: .infinity, minHeight: 340, alignment: .center)
@@ -89,6 +106,17 @@ struct GroupsView: View {
                 }
                 Spacer()
                 Button {
+                    onJoin()
+                } label: {
+                    Image(systemName: "person.2.badge.plus")
+                        .font(.headline)
+                        .frame(width: BarabariInteraction.minimumHitSize, height: BarabariInteraction.minimumHitSize)
+                        .contentShape(Circle())
+                }
+                .accessibilityLabel("Join group")
+                .accessibilityIdentifier("join-group")
+                .foregroundStyle(BarabariColors.accent)
+                Button {
                     BarabariInteraction.trigger(.selection)
                     isPresentingCreateGroup = true
                 } label: {
@@ -102,7 +130,28 @@ struct GroupsView: View {
                 .background(BarabariColors.accent, in: Circle())
             }
 
-            ForEach(viewModel.groups) { group in
+            BarabariCard {
+                HStack(spacing: BarabariSpacing.row) {
+                    Image(systemName: "link.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(BarabariColors.brandMint)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Joining a shared group?")
+                            .font(BarabariTypography.body)
+                        Text("Paste an invite link or scan a QR code.")
+                            .font(BarabariTypography.metadata)
+                            .foregroundStyle(BarabariColors.textSecondary)
+                    }
+                    Spacer(minLength: 0)
+                    Button("Join") { onJoin() }
+                        .buttonStyle(.bordered)
+                        .tint(BarabariColors.accent)
+                        .accessibilityIdentifier("join-group-card")
+                }
+            }
+
+            ForEach(Array(viewModel.groups.enumerated()), id: \.element.id) { entry in
+                let group = entry.element
                 Button {
                     selectGroup(group)
                 } label: {
@@ -135,10 +184,29 @@ struct GroupsView: View {
                         .contentShape(Rectangle())
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(BarabariCardButtonStyle())
                 .barabariHitTarget()
                 .accessibilityLabel(group.name)
                 .accessibilityHint("Open group")
+                .opacity(hasRevealedGroups ? 1 : 0)
+                .offset(y: hasRevealedGroups ? 0 : 8)
+                .animation(
+                    reduceMotion ? nil : .easeOut(duration: 0.34).delay(Double(entry.offset) * 0.045),
+                    value: hasRevealedGroups
+                )
+            }
+        }
+    }
+
+    private func revealGroupsIfReady() {
+        guard viewModel.state == .loaded || viewModel.state == .offline else { return }
+        guard !hasRevealedGroups else { return }
+
+        if reduceMotion {
+            hasRevealedGroups = true
+        } else {
+            withAnimation(.easeOut(duration: 0.38)) {
+                hasRevealedGroups = true
             }
         }
     }
