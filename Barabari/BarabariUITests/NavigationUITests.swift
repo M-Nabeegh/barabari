@@ -32,6 +32,23 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 2))
     }
 
+    func testSwitchingTabsFromFocusedExpenseFieldDismissesKeyboardInOneTap() {
+        let app = makeApp(arguments: ["-uiTestingDemoState"])
+        app.launch()
+
+        app.buttons["Add"].tap()
+        let amount = app.textFields["expense-amount"]
+        XCTAssertTrue(amount.waitForExistence(timeout: 2))
+        amount.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 2))
+
+        app.buttons["Settings"].tap()
+
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.keyboards.firstMatch.exists)
+        XCTAssertFalse(app.buttons["Done"].exists)
+    }
+
     func testEmptyGroupsOfferCreateAndJoin() {
         let app = makeApp(arguments: ["-uiTestingEmptyState"])
         app.launch()

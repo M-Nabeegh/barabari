@@ -26,7 +26,6 @@ struct RootView: View {
                     router.selectedTab = .groups
                 }
             }
-            .tabItem { Label(AppTab.home.title, systemImage: AppTab.home.systemImage) }
             .tag(AppTab.home)
 
             NavigationStack(path: $router.groupPath) {
@@ -52,28 +51,23 @@ struct RootView: View {
                     }
                 }
             }
-            .tabItem { Label(AppTab.groups.title, systemImage: AppTab.groups.systemImage) }
             .tag(AppTab.groups)
 
             NavigationStack {
                 AddExpenseView(viewModel: addExpenseViewModel, session: session)
             }
-            .tabItem { Label(AppTab.addExpense.title, systemImage: AppTab.addExpense.systemImage) }
             .tag(AppTab.addExpense)
 
             NavigationStack {
                 ActivityView(environment: environment, revision: session.revision)
             }
-            .tabItem { Label(AppTab.activity.title, systemImage: AppTab.activity.systemImage) }
             .tag(AppTab.activity)
 
             NavigationStack {
                 SettingsView(environment: environment, isDemo: environment.isDemo)
             }
-            .tabItem { Label(AppTab.settings.title, systemImage: AppTab.settings.systemImage) }
             .tag(AppTab.settings)
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
         .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             BarabariTabBar(selection: $router.selectedTab)
