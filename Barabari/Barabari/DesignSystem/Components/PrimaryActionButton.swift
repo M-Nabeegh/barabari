@@ -19,10 +19,19 @@ struct PrimaryActionButton<Label: View>: View {
                 .frame(maxWidth: .infinity, minHeight: max(52, BarabariInteraction.minimumHitSize))
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(BarabariColors.onAccent)
-        .background(BarabariColors.accent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .buttonStyle(BarabariPrimaryButtonStyle())
         .accessibilityAddTraits(.isButton)
+    }
+}
+
+private struct BarabariPrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(BarabariColors.onAccent)
+            .background(BarabariColors.accent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .opacity(configuration.isPressed ? 0.82 : 1)
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
+            .animation(.easeOut(duration: 0.16), value: configuration.isPressed)
     }
 }
 

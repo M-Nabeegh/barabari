@@ -15,6 +15,7 @@ struct BarabariCard<Content: View>: View {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .strokeBorder(BarabariColors.raised.opacity(0.8), lineWidth: 1)
             }
+            .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
     }
 }
 

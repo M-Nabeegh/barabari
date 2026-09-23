@@ -1,7 +1,29 @@
+import UIKit
 import XCTest
 @testable import Barabari
 
 final class DesignSystemTests: XCTestCase {
+    func testAccentUsesInkInLightModeAndPearlInDarkMode() {
+        let light = UIColor(BarabariColors.accent).resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
+        let dark = UIColor(BarabariColors.accent).resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
+
+        var lightRed: CGFloat = 0
+        var lightGreen: CGFloat = 0
+        var lightBlue: CGFloat = 0
+        var darkRed: CGFloat = 0
+        var darkGreen: CGFloat = 0
+        var darkBlue: CGFloat = 0
+        XCTAssertTrue(light.getRed(&lightRed, green: &lightGreen, blue: &lightBlue, alpha: nil))
+        XCTAssertTrue(dark.getRed(&darkRed, green: &darkGreen, blue: &darkBlue, alpha: nil))
+
+        XCTAssertLessThan(lightRed, 0.15)
+        XCTAssertLessThan(lightGreen, 0.16)
+        XCTAssertLessThan(lightBlue, 0.17)
+        XCTAssertGreaterThan(darkRed, 0.80)
+        XCTAssertGreaterThan(darkGreen, 0.80)
+        XCTAssertGreaterThan(darkBlue, 0.80)
+    }
+
     func testSpacingScaleIsStable() {
         XCTAssertEqual(BarabariSpacing.screen, 16)
         XCTAssertEqual(BarabariSpacing.section, 26)

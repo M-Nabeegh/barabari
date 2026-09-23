@@ -1,39 +1,33 @@
 import SwiftUI
 
 enum BarabariColors {
-    // The app icon is built around a deep indigo field, electric blue detail,
-    // and a mint balance mark. Keep those hues in one place so the product
-    // feels like one system instead of a collection of unrelated screens.
-    static let brandNavy = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x070D32) : UIColor(hex: 0x111A4B)
-    })
-    static let brandIndigo = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8D9AFF) : UIColor(hex: 0x3045D6)
-    })
-    static let brandMint = Color(uiColor: UIColor(hex: 0x98F0C2))
+    // Barabari uses a quiet obsidian and graphite foundation with a soft mint
+    // status color. Primary actions use ink in light mode and pearl in dark
+    // mode so hierarchy stays clear without a decorative accent hue.
+    static let brandObsidian = Color(uiColor: UIColor(hex: 0x090A0C))
+    static let brandGraphite = Color(uiColor: UIColor(hex: 0x15171A))
+    static let brandMint = Color(uiColor: UIColor(hex: 0x92E6BE))
 
     static let background = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x070D32) : UIColor(hex: 0xF5F7FF)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x090A0C) : UIColor(hex: 0xF5F6F7)
     })
     static let surface = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x101A4B) : .white
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x15171A) : .white
     })
     static let raised = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x182660) : UIColor(hex: 0xE8ECFF)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x22252A) : UIColor(hex: 0xE8EBEE)
     })
 
     static let textPrimary = Color(uiColor: .label)
     static let textSecondary = Color(uiColor: .secondaryLabel)
-    // Accent foregrounds have separate variants so a filled control remains
-    // readable in both appearances.
     static let accent = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x8D9AFF) : UIColor(hex: 0x3045D6)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0xF2F4F5) : UIColor(hex: 0x111315)
     })
     static let onAccent = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x070D32) : .white
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x090A0C) : .white
     })
     static let success = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x98F0C2) : UIColor(hex: 0x16724D)
+        traits.userInterfaceStyle == .dark ? UIColor(hex: 0x92E6BE) : UIColor(hex: 0x16724D)
     })
     static let warning = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark ? UIColor(hex: 0xF0B45B) : UIColor(hex: 0x9C5600)
