@@ -364,7 +364,7 @@ final class LedgerUseCaseTests: XCTestCase {
 
 private final class InMemoryGroupRepository: GroupRepository, @unchecked Sendable {
     private var storedGroups: [Group] = []
-    private let membersByGroup: [UUID: [GroupMember]]
+    private var membersByGroup: [UUID: [GroupMember]]
 
     init(membersByGroup: [UUID: [GroupMember]]) {
         self.membersByGroup = membersByGroup
@@ -386,12 +386,44 @@ private final class InMemoryGroupRepository: GroupRepository, @unchecked Sendabl
             deletedAt: nil
         )
         storedGroups.append(group)
+        membersByGroup[group.id] = [GroupMember(groupID: group.id, userID: ownerID, role: .owner)]
         return group
     }
 
     func members(groupID: UUID) async throws -> [GroupMember] {
         membersByGroup[groupID] ?? []
     }
+
+    func invitePayload(groupID: UUID) async throws -> GroupInvitePayload {
+        guard let group = storedGroups.first(where: { $0.id == groupID }) else {
+            throw InMemoryGroupRepositoryError.missingGroup(groupID)
+        }
+        return GroupInvitePayload(
+            version: GroupInvitePayload.currentVersion,
+            groupID: group.id,
+            groupName: group.name,
+            groupRevision: group.revision
+        )
+    }
+
+    func joinGroup(invite: GroupInvitePayload, userID: UUID) async throws -> GroupJoinOutcome {
+        guard let group = storedGroups.first(where: { $0.id == invite.groupID }) else {
+            return .unavailable(invite)
+        }
+        if membersByGroup[invite.groupID, default: []].contains(where: {
+            $0.userID == userID && $0.isActive
+        }) {
+            return .alreadyMember(group)
+        }
+        membersByGroup[invite.groupID, default: []].append(
+            GroupMember(groupID: invite.groupID, userID: userID, role: .member)
+        )
+        return .joined(group)
+    }
+}
+
+private enum InMemoryGroupRepositoryError: Error, Equatable {
+    case missingGroup(UUID)
 }
 
 private final class InMemoryExpenseRepository: ExpenseRepository, @unchecked Sendable {

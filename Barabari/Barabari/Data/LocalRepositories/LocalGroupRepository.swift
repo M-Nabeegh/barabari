@@ -102,6 +102,48 @@ final actor LocalGroupRepository: GroupRepository {
             .sorted { uuidBytes($0.userID).lexicographicallyPrecedes(uuidBytes($1.userID)) }
     }
 
+    func invitePayload(groupID: UUID) throws -> GroupInvitePayload {
+        let context = ModelContext(container)
+        guard let storedGroup = try context.fetch(FetchDescriptor<StoredGroup>())
+            .first(where: { $0.id == groupID && $0.deletedAt == nil }) else {
+            throw LocalPersistenceError.missingGroup(groupID)
+        }
+        return GroupInvitePayload(
+            version: GroupInvitePayload.currentVersion,
+            groupID: storedGroup.id,
+            groupName: storedGroup.name,
+            groupRevision: storedGroup.revision
+        )
+    }
+
+    func joinGroup(invite: GroupInvitePayload, userID: UUID) throws -> GroupJoinOutcome {
+        let context = ModelContext(container)
+        guard let storedGroup = try context.fetch(FetchDescriptor<StoredGroup>())
+            .first(where: { $0.id == invite.groupID && $0.deletedAt == nil }) else {
+            return .unavailable(invite)
+        }
+
+        let group = storedGroup.asDomain
+        let storedMembers = try context.fetch(FetchDescriptor<StoredGroupMember>())
+        if storedMembers.contains(where: {
+            $0.groupID == invite.groupID && $0.userID == userID && $0.removedAt == nil
+        }) {
+            return .alreadyMember(group)
+        }
+
+        let member = GroupMember(groupID: invite.groupID, userID: userID, role: .member)
+        let event = ActivityEvent(
+            groupID: invite.groupID,
+            actorUserID: userID,
+            kind: .memberJoined,
+            subjectID: member.id
+        )
+        context.insert(StoredGroupMember(member: member))
+        context.insert(StoredActivityEvent(event: event))
+        try context.save()
+        return .joined(group)
+    }
+
     func upsertMember(_ member: GroupMember) throws {
         let context = ModelContext(container)
         if let existing = try context.fetch(FetchDescriptor<StoredGroupMember>()).first(where: { $0.id == member.id }) {

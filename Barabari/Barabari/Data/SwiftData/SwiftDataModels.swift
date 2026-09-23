@@ -3,6 +3,7 @@ import SwiftData
 
 enum LocalPersistenceError: Error, Equatable, Sendable {
     case invalidSplitMethod(UUID)
+    case missingGroup(UUID)
     case missingExpense(UUID)
     case invalidCursor
     case idempotencyKeyConflict(UUID)
