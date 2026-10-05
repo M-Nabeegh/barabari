@@ -23,16 +23,15 @@ struct JoinGroupView: View {
                     linkEntry
                     stateContent
                 }
-                .padding(BarabariSpacing.screen)
-                .padding(.bottom, BarabariSpacing.bottomContent)
+                .padding(.top, 8)
+                .barabariScreen()
             }
             .background(BarabariColors.background.ignoresSafeArea())
             .navigationTitle("Join a group")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                        .barabariHitTarget()
+                    Button("Done", systemImage: "xmark") { dismiss() }
                 }
             }
         }
@@ -67,16 +66,21 @@ struct JoinGroupView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: BarabariSpacing.compact) {
-            Image(systemName: "person.2.badge.plus")
-                .font(.system(size: 30, weight: .semibold))
-                .foregroundStyle(BarabariColors.accent)
+        VStack(spacing: 12) {
+            Image(systemName: "qrcode.viewfinder")
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(BarabariColors.accent.gradient)
+                .frame(width: 80, height: 80)
+                .background(BarabariColors.accent.opacity(0.12), in: .circle)
+                .symbolEffect(.breathe, options: .repeat(2))
             Text("Join with an invite")
-                .font(BarabariTypography.screenTitle)
+                .font(.title2.weight(.bold))
             Text("Paste a Barabari link or scan a QR code. We will check whether the group is available in this local demo.")
-                .font(BarabariTypography.body)
+                .font(BarabariTypography.metadata)
                 .foregroundStyle(BarabariColors.textSecondary)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var linkEntry: some View {
@@ -102,22 +106,35 @@ struct JoinGroupView: View {
                     .accessibilityLabel("Paste invite link")
                     .barabariHitTarget()
                 }
-                HStack(spacing: BarabariSpacing.row) {
-                    Button("Check link") {
-                        Task { await viewModel.parseAndLoad() }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .barabariHitTarget()
+                GlassEffectContainer(spacing: 10) {
+                    HStack(spacing: 10) {
+                        Button {
+                            BarabariInteraction.trigger(.selection)
+                            Task { await viewModel.parseAndLoad() }
+                        } label: {
+                            Text("Check link")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(BarabariColors.onAccent)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(BarabariColors.accent.gradient, in: .capsule)
+                                .contentShape(Capsule())
+                        }
+                        .buttonStyle(.pressable)
 
-                    Button {
-                        isLinkFieldFocused = false
-                        isPresentingScanner = true
-                    } label: {
-                        Label("Scan QR", systemImage: "qrcode.viewfinder")
+                        Button {
+                            isLinkFieldFocused = false
+                            isPresentingScanner = true
+                        } label: {
+                            Label("Scan QR", systemImage: "qrcode.viewfinder")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(BarabariColors.textPrimary)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .contentShape(Capsule())
+                        }
+                        .buttonStyle(.pressable)
+                        .glassEffect(.regular.interactive(), in: .capsule)
+                        .accessibilityIdentifier("scan-qr")
                     }
-                    .buttonStyle(.bordered)
-                    .accessibilityIdentifier("scan-qr")
-                    .barabariHitTarget()
                 }
             }
         }
@@ -147,8 +164,11 @@ struct JoinGroupView: View {
         VStack(alignment: .leading, spacing: BarabariSpacing.row) {
             BarabariCard {
                 VStack(alignment: .leading, spacing: BarabariSpacing.compact) {
-                    Label(payload.groupName, systemImage: "person.2.fill")
-                        .font(BarabariTypography.sectionTitle)
+                    HStack(spacing: 12) {
+                        GroupAvatar(name: payload.groupName, seed: payload.groupID, size: 44)
+                        Text(payload.groupName)
+                            .font(BarabariTypography.sectionTitle)
+                    }
                     if localGroup == nil {
                         Label("This group is not available on this iPhone", systemImage: "iphone.slash")
                             .font(BarabariTypography.metadata)

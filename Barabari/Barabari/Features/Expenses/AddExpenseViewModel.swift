@@ -21,8 +21,14 @@ final class AddExpenseViewModel: ObservableObject {
         didSet { refreshPreview() }
     }
     @Published var title = "" {
-        didSet { clearValidationIfNeeded() }
+        didSet {
+            clearValidationIfNeeded()
+            if !hasChosenCategory { detectedCategory = ExpenseCategory.detect(from: title) }
+        }
     }
+    /// Auto-detected from the title until the person picks one themselves.
+    @Published private(set) var detectedCategory: ExpenseCategory?
+    @Published private(set) var hasChosenCategory = false
     @Published var payerID: UUID? {
         didSet { clearValidationIfNeeded() }
     }
@@ -43,13 +49,19 @@ final class AddExpenseViewModel: ObservableObject {
     @Published private(set) var savedExpense: Expense?
 
     private let environment: AppEnvironment
+    private let metadata: LedgerMetadata
     private let memberLoader: (UUID) async throws -> [GroupMember]
     private var exactAmountTexts: [UUID: String] = [:]
     private var memberLoadTask: Task<Void, Never>?
     private var memberLoadGeneration = 0
 
-    init(environment: AppEnvironment, memberLoader: ((UUID) async throws -> [GroupMember])? = nil) {
+    init(
+        environment: AppEnvironment,
+        metadata: LedgerMetadata? = nil,
+        memberLoader: ((UUID) async throws -> [GroupMember])? = nil
+    ) {
         self.environment = environment
+        self.metadata = metadata ?? .shared
         self.memberLoader = memberLoader ?? { groupID in
             try await environment.groupRepository.members(groupID: groupID)
         }
@@ -102,15 +114,22 @@ final class AddExpenseViewModel: ObservableObject {
         refreshPreview()
     }
 
+    var category: ExpenseCategory { detectedCategory ?? .other }
+
+    func chooseCategory(_ category: ExpenseCategory) {
+        hasChosenCategory = true
+        detectedCategory = category
+    }
+
     func memberName(for id: UUID) -> String {
-        if id == environment.currentUserID { return "You" }
-        guard let index = members.firstIndex(where: { $0.userID == id }) else { return "Group member" }
-        return "Member \(index + 1)"
+        metadata.displayName(for: id, in: members, currentUserID: environment.currentUserID)
     }
 
     func addAnotherExpense() {
         amountText = ""
         title = ""
+        hasChosenCategory = false
+        detectedCategory = nil
         splitSelection = .equal
         splitMethod = .equal
         exactAmountTexts = [:]
@@ -133,6 +152,7 @@ final class AddExpenseViewModel: ObservableObject {
                 repository: environment.expenseRepository,
                 groupRepository: environment.groupRepository
             ).call(draft: draft, idempotencyKey: UUID())
+            metadata.setCategory(category, for: expense.id)
             savedExpense = expense
             previewSplits = expense.splits
             return true

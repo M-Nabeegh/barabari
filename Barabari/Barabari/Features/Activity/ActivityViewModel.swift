@@ -55,15 +55,9 @@ final class ActivityViewModel: ObservableObject {
         hasMore = false
         defer { isLoading = false }
 
-        do {
-            await appendNextPage()
-            if !Task.isCancelled, rows.isEmpty {
-                state = .empty
-            }
-        } catch is CancellationError {
-            return
-        } catch {
-            state = .failed(error.localizedDescription)
+        await appendNextPage()
+        if !Task.isCancelled, rows.isEmpty {
+            state = .empty
         }
     }
 

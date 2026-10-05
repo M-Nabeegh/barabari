@@ -1,10 +1,21 @@
 import Combine
 import Foundation
+import WidgetKit
+
+struct CategorySpend: Equatable, Identifiable {
+    let category: ExpenseCategory
+    let minorUnits: Int64
+
+    var id: ExpenseCategory { category }
+}
 
 struct HomeSnapshot: Equatable {
     let amountOwed: Money
     let amountOwing: Money
     let recentActivity: [ActivityEvent]
+    var spending: [CategorySpend] = []
+    /// Expenses behind the recent activity rows, keyed by expense ID.
+    var expenses: [UUID: Expense] = [:]
 }
 
 enum HomeState: Equatable {
@@ -20,9 +31,11 @@ final class HomeViewModel: ObservableObject {
     @Published private(set) var homeState: HomeState = .loading
 
     private let environment: AppEnvironment
+    private let metadata: LedgerMetadata
 
-    init(environment: AppEnvironment) {
+    init(environment: AppEnvironment, metadata: LedgerMetadata? = nil) {
         self.environment = environment
+        self.metadata = metadata ?? .shared
     }
 
     func load() async {
@@ -62,15 +75,65 @@ final class HomeViewModel: ObservableObject {
                 }
             }
 
+            let expenses = try await allExpenses(groups: groups)
             let snapshot = HomeSnapshot(
                 amountOwed: Money(minorUnits: owed, currencyCode: "PKR"),
                 amountOwing: Money(minorUnits: owing, currencyCode: "PKR"),
-                recentActivity: try await environment.recentActivity(limit: 5)
+                recentActivity: try await environment.recentActivity(limit: 5),
+                spending: spendingByCategory(expenses: expenses),
+                expenses: Dictionary(uniqueKeysWithValues: expenses.map { ($0.id, $0) })
             )
             homeState = environment.isOffline ? .offline(snapshot) : .loaded(snapshot)
+            publishWidgetSnapshot(snapshot, groups: groups)
         } catch {
             homeState = .failed(error.localizedDescription)
         }
+    }
+}
+
+extension HomeViewModel {
+    func allExpenses(groups: [Group]) async throws -> [Expense] {
+        var expenses: [Expense] = []
+        for group in groups {
+            var cursor: String?
+            repeat {
+                let page = try await environment.expenseRepository.listExpenses(groupID: group.id, cursor: cursor)
+                expenses += page.items.filter { $0.deletedAt == nil }
+                cursor = page.nextCursor
+            } while cursor != nil
+        }
+        return expenses
+    }
+
+    /// Your own share of every expense, grouped by category, largest first.
+    func spendingByCategory(expenses: [Expense]) -> [CategorySpend] {
+        var totals: [ExpenseCategory: Int64] = [:]
+        for expense in expenses {
+            guard let share = expense.splits.first(where: { $0.userID == environment.currentUserID }) else { continue }
+            totals[metadata.category(for: expense), default: 0] += share.amount.minorUnits
+        }
+        return totals
+            .filter { $0.value > 0 }
+            .map { CategorySpend(category: $0.key, minorUnits: $0.value) }
+            .sorted { $0.minorUnits == $1.minorUnits ? $0.category.rawValue < $1.category.rawValue : $0.minorUnits > $1.minorUnits }
+    }
+}
+
+extension HomeViewModel {
+    /// Shares the balance with the home screen widget. Demo and test stores never publish.
+    fileprivate func publishWidgetSnapshot(_ snapshot: HomeSnapshot, groups: [Group]) {
+        guard !environment.isDemo else { return }
+        let widget = WidgetSnapshot(
+            netMinorUnits: snapshot.amountOwed.minorUnits - snapshot.amountOwing.minorUnits,
+            owedMinorUnits: snapshot.amountOwed.minorUnits,
+            owingMinorUnits: snapshot.amountOwing.minorUnits,
+            groups: groups.prefix(3).map { WidgetSnapshot.GroupLine(id: $0.id, name: $0.name) },
+            updatedAt: .now
+        )
+        guard widget.netMinorUnits != WidgetSnapshot.load()?.netMinorUnits
+            || widget.groups != WidgetSnapshot.load()?.groups else { return }
+        widget.save()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 }
 

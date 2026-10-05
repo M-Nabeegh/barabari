@@ -18,7 +18,7 @@ enum AmountFormatter {
             let created = NumberFormatter()
             created.numberStyle = .currency
             created.currencyCode = normalizedCurrency
-            created.currencySymbol = normalizedCurrency == "PKR" ? "PKR" : normalizedCurrency
+            created.currencySymbol = normalizedCurrency == "PKR" ? "Rs" : normalizedCurrency
             created.minimumFractionDigits = 0
             created.maximumFractionDigits = 2
             created.locale = Locale(identifier: "en_PK")
@@ -54,7 +54,7 @@ struct AmountText: View {
         return Text(displayValue)
             .font(BarabariTypography.amount(for: style))
             .monospacedDigit()
-            .foregroundStyle(BarabariColors.textPrimary)
+            .contentTransition(.numericText(value: Double(minorUnits)))
             .accessibilityLabel(displayValue)
     }
 }

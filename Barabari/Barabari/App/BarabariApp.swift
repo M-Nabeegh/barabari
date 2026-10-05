@@ -7,6 +7,11 @@ struct BarabariApp: App {
 
     init() {
         let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains(where: { $0.hasPrefix("-uiTesting") }) {
+            let suiteName = "barabari.uitests"
+            UserDefaults().removePersistentDomain(forName: suiteName)
+            LedgerMetadata.shared = LedgerMetadata(defaults: UserDefaults(suiteName: suiteName) ?? .standard)
+        }
         if arguments.contains("-uiTestingDemoState") {
             environment = AppEnvironment(
                 inMemory: true,

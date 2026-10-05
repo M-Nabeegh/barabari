@@ -17,24 +17,22 @@ struct GroupInviteView: View {
                 VStack(alignment: .leading, spacing: BarabariSpacing.section) {
                     switch viewModel.state {
                     case .loading:
-                        ProgressView("Preparing invite")
-                            .frame(maxWidth: .infinity, minHeight: 280)
+                        BarabariLoadingState(title: "Preparing invite")
                     case let .loaded(payload, link):
                         inviteContent(payload: payload, link: link)
                     case let .failed(message):
                         failure(message)
                     }
                 }
-                .padding(BarabariSpacing.screen)
-                .padding(.bottom, BarabariSpacing.bottomContent)
+                .padding(.top, 8)
+                .barabariScreen()
             }
             .background(BarabariColors.background.ignoresSafeArea())
             .navigationTitle("Invite people")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                        .barabariHitTarget()
+                    Button("Done", systemImage: "xmark") { dismiss() }
                 }
             }
         }
@@ -47,53 +45,79 @@ struct GroupInviteView: View {
 
     @ViewBuilder
     private func inviteContent(payload: GroupInvitePayload, link: URL) -> some View {
-        VStack(alignment: .leading, spacing: BarabariSpacing.compact) {
+        VStack(spacing: 6) {
             Text("Invite to \(payload.groupName)")
-                .font(BarabariTypography.screenTitle)
+                .font(.title2.weight(.bold))
+                .multilineTextAlignment(.center)
             Text("Share this link or let someone scan the code to join this local ledger.")
-                .font(BarabariTypography.body)
+                .font(BarabariTypography.metadata)
                 .foregroundStyle(BarabariColors.textSecondary)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
 
         InviteQRCodeImage(url: link)
+            .frame(maxWidth: 260)
+            .overlay {
+                GroupAvatar(name: payload.groupName, seed: payload.groupID, size: 52)
+                    .padding(5)
+                    .background(.white, in: .rect(cornerRadius: 20))
+            }
+            .shadow(color: .black.opacity(0.18), radius: 30, y: 16)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
             .accessibilityIdentifier("invite-qr")
+            .staggeredAppear(0)
 
-        BarabariCard {
-            VStack(alignment: .leading, spacing: BarabariSpacing.row) {
-                Text("Invite link")
-                    .font(BarabariTypography.metadata)
-                    .foregroundStyle(BarabariColors.textSecondary)
-                Text(link.absoluteString)
-                    .font(.system(.footnote, design: .monospaced))
-                    .textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: BarabariSpacing.row) {
+        VStack(spacing: BarabariSpacing.row) {
+            Text(link.absoluteString)
+                .font(.system(.caption, design: .monospaced))
+                .foregroundStyle(BarabariColors.textSecondary)
+                .lineLimit(2)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(BarabariColors.raised.opacity(0.6), in: .rect(cornerRadius: 16))
+
+            GlassEffectContainer(spacing: 10) {
+                HStack(spacing: 10) {
                     Button {
                         UIPasteboard.general.string = link.absoluteString
-                        didCopy = true
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) { didCopy = true }
                         BarabariInteraction.trigger(.success)
                     } label: {
                         Label(didCopy ? "Copied" : "Copy link", systemImage: didCopy ? "checkmark" : "doc.on.doc")
+                            .contentTransition(.symbolEffect(.replace))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(BarabariColors.textPrimary)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .contentShape(Capsule())
                     }
+                    .buttonStyle(.pressable)
+                    .glassEffect(.regular.interactive(), in: .capsule)
                     .accessibilityIdentifier("copy-invite-link")
-                    .barabariHitTarget()
 
                     ShareLink(item: link.absoluteString) {
                         Label("Share link", systemImage: "square.and.arrow.up")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(BarabariColors.onAccent)
+                            .frame(maxWidth: .infinity, minHeight: 50)
+                            .background(BarabariColors.accent.gradient, in: .capsule)
+                            .contentShape(Capsule())
                     }
+                    .buttonStyle(.pressable)
                     .accessibilityIdentifier("share-invite-link")
-                    .barabariHitTarget()
                 }
-                .buttonStyle(.bordered)
             }
         }
+        .staggeredAppear(1)
 
         Label("Local demo: this invite works when the group is already in Barabari on this iPhone. Cloud sync comes later.", systemImage: "iphone")
             .font(BarabariTypography.metadata)
             .foregroundStyle(BarabariColors.textSecondary)
-            .transition(.opacity.combined(with: .move(edge: .bottom)))
+            .staggeredAppear(2)
     }
 
     private func failure(_ message: String) -> some View {
@@ -103,7 +127,7 @@ struct GroupInviteView: View {
                 .foregroundStyle(BarabariColors.danger)
             Text("Invite unavailable")
                 .font(BarabariTypography.sectionTitle)
-            Text(message)
+            Text(LocalizedStringKey(message))
                 .foregroundStyle(BarabariColors.textSecondary)
             PrimaryActionButton("Try again") {
                 Task { await viewModel.load() }

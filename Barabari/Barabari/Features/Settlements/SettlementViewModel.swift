@@ -15,8 +15,8 @@ final class SettlementViewModel: ObservableObject {
 
     private let environment: AppEnvironment
     private let groupID: UUID
-    private let fromUserID: UUID
-    private let toUserID: UUID
+    let fromUserID: UUID
+    let toUserID: UUID
 
     init(
         environment: AppEnvironment,

@@ -22,7 +22,7 @@
 		A10000000000000000000013 /* PrimaryActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* PrimaryActionButton.swift */; };
 		A10000000000000000000014 /* AmountText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* AmountText.swift */; };
 		A10000000000000000000015 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* StatusBadge.swift */; };
-		A10000000000000000000016 /* BarabariTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* BarabariTabBar.swift */; };
+		A10000000000000000000016 /* BarabariComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* BarabariComponents.swift */; };
 		A10000000000000000000017 /* SplitCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* SplitCalculatorTests.swift */; };
 		A10000000000000000000018 /* Money.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* Money.swift */; };
 		A10000000000000000000019 /* PercentageBasisPoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022 /* PercentageBasisPoints.swift */; };
@@ -97,6 +97,16 @@
 		A10000000000000000000088 /* JoinGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000091 /* JoinGroupView.swift */; };
 		A10000000000000000000089 /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000092 /* QRCodeScannerView.swift */; };
 		A10000000000000000000090 /* InviteFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000093 /* InviteFlowUITests.swift */; };
+		29311F58E2B54DDFBEE8512B /* ExpenseCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1100314F5174B69B43DEF31 /* ExpenseCategory.swift */; };
+		320EB5D9BA2A4EE3A1E8F8C1 /* LedgerMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57798A20DB944E6EBECC54D1 /* LedgerMetadata.swift */; };
+		FAA8AC9C80A14D20ACF17845 /* AmountKeypad.swift in Sources */ = {isa = PBXBuildFile; fileRef = F62D4A3559DE4511AC6F14D2 /* AmountKeypad.swift */; };
+		D92E05C0103F432B89C9B88A /* PeopleSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EE9E8E38E24EB29009C236 /* PeopleSheets.swift */; };
+		B19D3707439A4107ADD7405B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CA8D954FD94A599E464DE1 /* OnboardingView.swift */; };
+		7EA60B7009CA4DE2BA9D0DE3 /* AppLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = EED9373B555443789F8BB4AA /* AppLock.swift */; };
+		5B1D8EDEA03D42E7A5DBE3D9 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99B4034649F645AEB17518F1 /* WidgetSnapshot.swift */; };
+		974315865CD546BF9B1A26BF /* BarabariWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9BA076AEA7EA43618B320B55 /* BarabariWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C7C3E54927B04552A597B987 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99B4034649F645AEB17518F1 /* WidgetSnapshot.swift */; };
+		E0946016F7184467B8EAF940 /* PolishFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A8A980B66140EB90D4BC34 /* PolishFeatureTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,7 +124,50 @@
 			remoteGlobalIDString = A50000000000000000000001;
 			remoteInfo = Barabari;
 		};
+		B3CD8080F58B411499FA110C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 705A262C41D84F32A440390C;
+			remoteInfo = BarabariWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		93CCA56AB8594955BFA1BFAC /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				974315865CD546BF9B1A26BF /* BarabariWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0E994783FF8A4390AA787250 /* Exceptions for "BarabariWidget" folder in "BarabariWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				BarabariWidget.entitlements,
+			);
+			target = 705A262C41D84F32A440390C /* BarabariWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		2769DEE3C2594395B3C2D820 /* BarabariWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0E994783FF8A4390AA787250 /* Exceptions for "BarabariWidget" folder in "BarabariWidgetExtension" target */,
+			);
+			path = BarabariWidget;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFileReference section */
 		A20000000000000000000001 /* BarabariApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarabariApp.swift; sourceTree = "<group>"; };
@@ -135,7 +188,7 @@
 		A20000000000000000000016 /* PrimaryActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryActionButton.swift; sourceTree = "<group>"; };
 		A20000000000000000000017 /* AmountText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountText.swift; sourceTree = "<group>"; };
 		A20000000000000000000018 /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
-		A20000000000000000000019 /* BarabariTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarabariTabBar.swift; sourceTree = "<group>"; };
+		A20000000000000000000019 /* BarabariComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarabariComponents.swift; sourceTree = "<group>"; };
 		A20000000000000000000020 /* SplitCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitCalculatorTests.swift; sourceTree = "<group>"; };
 		A20000000000000000000021 /* Money.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Money.swift; sourceTree = "<group>"; };
 		A20000000000000000000022 /* PercentageBasisPoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PercentageBasisPoints.swift; sourceTree = "<group>"; };
@@ -211,6 +264,15 @@
 		A20000000000000000000092 /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 		A20000000000000000000093 /* InviteFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InviteFlowUITests.swift; sourceTree = "<group>"; };
 		AC00000000000000000000001 /* Barabari/Config/Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Barabari/Config/Debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		C1100314F5174B69B43DEF31 /* ExpenseCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseCategory.swift; sourceTree = "<group>"; };
+		57798A20DB944E6EBECC54D1 /* LedgerMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerMetadata.swift; sourceTree = "<group>"; };
+		F62D4A3559DE4511AC6F14D2 /* AmountKeypad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountKeypad.swift; sourceTree = "<group>"; };
+		21EE9E8E38E24EB29009C236 /* PeopleSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeopleSheets.swift; sourceTree = "<group>"; };
+		47CA8D954FD94A599E464DE1 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		EED9373B555443789F8BB4AA /* AppLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLock.swift; sourceTree = "<group>"; };
+		99B4034649F645AEB17518F1 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
+		9BA076AEA7EA43618B320B55 /* BarabariWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BarabariWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		00A8A980B66140EB90D4BC34 /* PolishFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolishFeatureTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -235,6 +297,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9DB45338BD2A4579BA01966F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -252,6 +321,7 @@
 				A40000000000000000000002 /* Barabari */,
 				A40000000000000000000005 /* BarabariTests */,
 				A40000000000000000000006 /* BarabariUITests */,
+				2769DEE3C2594395B3C2D820 /* BarabariWidget */,
 				A40000000000000000000007 /* Products */,
 				86F625DA306009E000CEC167 /* Recovered References */,
 			);
@@ -278,6 +348,8 @@
 				A20000000000000000000003 /* ContentView.swift */,
 				A20000000000000000000051 /* AppRouter.swift */,
 				A20000000000000000000076 /* LedgerSession.swift */,
+				57798A20DB944E6EBECC54D1 /* LedgerMetadata.swift */,
+				99B4034649F645AEB17518F1 /* WidgetSnapshot.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -325,6 +397,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000007 /* Barabari.app */,
+				9BA076AEA7EA43618B320B55 /* BarabariWidgetExtension.appex */,
 				A20000000000000000000008 /* BarabariTests.xctest */,
 				A20000000000000000000009 /* BarabariUITests.xctest */,
 			);
@@ -349,8 +422,9 @@
 				A20000000000000000000015 /* BarabariCard.swift */,
 				A20000000000000000000016 /* PrimaryActionButton.swift */,
 				A20000000000000000000017 /* AmountText.swift */,
+				F62D4A3559DE4511AC6F14D2 /* AmountKeypad.swift */,
 				A20000000000000000000018 /* StatusBadge.swift */,
-				A20000000000000000000019 /* BarabariTabBar.swift */,
+				A20000000000000000000019 /* BarabariComponents.swift */,
 				A20000000000000000000086 /* InviteQRCode.swift */,
 			);
 			path = Components;
@@ -360,6 +434,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000020 /* SplitCalculatorTests.swift */,
+				00A8A980B66140EB90D4BC34 /* PolishFeatureTests.swift */,
 				A20000000000000000000026 /* LedgerUseCaseTests.swift */,
 				A20000000000000000000085 /* GroupInviteTests.swift */,
 			);
@@ -384,6 +459,7 @@
 				A20000000000000000000028 /* Group.swift */,
 				A20000000000000000000029 /* GroupMember.swift */,
 				A20000000000000000000030 /* Expense.swift */,
+				C1100314F5174B69B43DEF31 /* ExpenseCategory.swift */,
 				A20000000000000000000031 /* Settlement.swift */,
 				A20000000000000000000032 /* ActivityEvent.swift */,
 				A20000000000000000000033 /* BalanceSummary.swift */,
@@ -480,6 +556,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000052 /* RootView.swift */,
+				47CA8D954FD94A599E464DE1 /* OnboardingView.swift */,
 			);
 			path = Root;
 			sourceTree = "<group>";
@@ -499,6 +576,7 @@
 				A20000000000000000000055 /* GroupsView.swift */,
 				A20000000000000000000056 /* GroupsViewModel.swift */,
 				A20000000000000000000057 /* GroupDetailView.swift */,
+				21EE9E8E38E24EB29009C236 /* PeopleSheets.swift */,
 				A20000000000000000000058 /* GroupDetailViewModel.swift */,
 				A20000000000000000000087 /* GroupInviteViewModel.swift */,
 				A20000000000000000000088 /* GroupInviteView.swift */,
@@ -564,6 +642,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000071 /* SettingsView.swift */,
+				EED9373B555443789F8BB4AA /* AppLock.swift */,
 				A20000000000000000000072 /* SettingsViewModel.swift */,
 				A20000000000000000000081 /* LocalLedgerExport.swift */,
 			);
@@ -588,10 +667,12 @@
 				A30000000000000000000001 /* Frameworks */,
 				A70000000000000000000001 /* Sources */,
 				A80000000000000000000001 /* Resources */,
+				93CCA56AB8594955BFA1BFAC /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				241E05918357405E913D3C75 /* PBXTargetDependency */,
 			);
 			name = Barabari;
 			productName = Barabari;
@@ -634,6 +715,26 @@
 			productReference = A20000000000000000000009 /* BarabariUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		705A262C41D84F32A440390C /* BarabariWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 23C1EE1D63504265A0120AE7 /* Build configuration list for PBXNativeTarget "BarabariWidgetExtension" */;
+			buildPhases = (
+				7C2B348C11A04B1B8E3D0515 /* Sources */,
+				9DB45338BD2A4579BA01966F /* Frameworks */,
+				4E52AC3C347742A1AC4C090E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2769DEE3C2594395B3C2D820 /* BarabariWidget */,
+			);
+			name = BarabariWidgetExtension;
+			productName = BarabariWidgetExtension;
+			productReference = 9BA076AEA7EA43618B320B55 /* BarabariWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -655,6 +756,9 @@
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = A50000000000000000000001;
 					};
+					705A262C41D84F32A440390C = {
+						CreatedOnToolsVersion = 27.0;
+					};
 				};
 			};
 			buildConfigurationList = A60000000000000000000004 /* Build configuration list for PBXProject "Barabari" */;
@@ -673,6 +777,7 @@
 				A50000000000000000000001 /* Barabari */,
 				A50000000000000000000002 /* BarabariTests */,
 				A50000000000000000000003 /* BarabariUITests */,
+				705A262C41D84F32A440390C /* BarabariWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -700,6 +805,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4E52AC3C347742A1AC4C090E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -717,8 +829,9 @@
 				A10000000000000000000012 /* BarabariCard.swift in Sources */,
 				A10000000000000000000013 /* PrimaryActionButton.swift in Sources */,
 				A10000000000000000000014 /* AmountText.swift in Sources */,
+				FAA8AC9C80A14D20ACF17845 /* AmountKeypad.swift in Sources */,
 				A10000000000000000000015 /* StatusBadge.swift in Sources */,
-				A10000000000000000000016 /* BarabariTabBar.swift in Sources */,
+				A10000000000000000000016 /* BarabariComponents.swift in Sources */,
 				A10000000000000000000018 /* Money.swift in Sources */,
 				A10000000000000000000019 /* PercentageBasisPoints.swift in Sources */,
 				A10000000000000000000020 /* ExpenseSplit.swift in Sources */,
@@ -728,6 +841,7 @@
 				A10000000000000000000025 /* Group.swift in Sources */,
 				A10000000000000000000026 /* GroupMember.swift in Sources */,
 				A10000000000000000000027 /* Expense.swift in Sources */,
+				29311F58E2B54DDFBEE8512B /* ExpenseCategory.swift in Sources */,
 				A10000000000000000000028 /* Settlement.swift in Sources */,
 				A10000000000000000000029 /* ActivityEvent.swift in Sources */,
 				A10000000000000000000030 /* BalanceSummary.swift in Sources */,
@@ -748,11 +862,13 @@
 				A10000000000000000000045 /* LocalBalanceRepository.swift in Sources */,
 				A10000000000000000000048 /* AppRouter.swift in Sources */,
 				A10000000000000000000049 /* RootView.swift in Sources */,
+				B19D3707439A4107ADD7405B /* OnboardingView.swift in Sources */,
 				A10000000000000000000050 /* HomeView.swift in Sources */,
 				A10000000000000000000051 /* HomeViewModel.swift in Sources */,
 				A10000000000000000000052 /* GroupsView.swift in Sources */,
 				A10000000000000000000053 /* GroupsViewModel.swift in Sources */,
 				A10000000000000000000054 /* GroupDetailView.swift in Sources */,
+				D92E05C0103F432B89C9B88A /* PeopleSheets.swift in Sources */,
 				A10000000000000000000055 /* GroupDetailViewModel.swift in Sources */,
 				A10000000000000000000057 /* AddExpenseView.swift in Sources */,
 				A10000000000000000000058 /* AddExpenseViewModel.swift in Sources */,
@@ -764,8 +880,11 @@
 				A10000000000000000000066 /* SettlementViewModel.swift in Sources */,
 				A10000000000000000000067 /* ActivityView.swift in Sources */,
 				A10000000000000000000068 /* SettingsView.swift in Sources */,
+				7EA60B7009CA4DE2BA9D0DE3 /* AppLock.swift in Sources */,
 				A10000000000000000000069 /* SettingsViewModel.swift in Sources */,
 				A10000000000000000000073 /* LedgerSession.swift in Sources */,
+				320EB5D9BA2A4EE3A1E8F8C1 /* LedgerMetadata.swift in Sources */,
+				5B1D8EDEA03D42E7A5DBE3D9 /* WidgetSnapshot.swift in Sources */,
 				A10000000000000000000074 /* BarabariInteraction.swift in Sources */,
 				A10000000000000000000075 /* ActivityViewModel.swift in Sources */,
 				A10000000000000000000078 /* LocalLedgerExport.swift in Sources */,
@@ -788,6 +907,7 @@
 				A10000000000000000000007 /* AppEnvironmentTests.swift in Sources */,
 				A10000000000000000000008 /* DesignSystemTests.swift in Sources */,
 				A10000000000000000000017 /* SplitCalculatorTests.swift in Sources */,
+				E0946016F7184467B8EAF940 /* PolishFeatureTests.swift in Sources */,
 				A10000000000000000000023 /* LedgerUseCaseTests.swift in Sources */,
 				A10000000000000000000046 /* SwiftDataRepositoryTests.swift in Sources */,
 				A10000000000000000000062 /* AddExpenseViewModelTests.swift in Sources */,
@@ -813,6 +933,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7C2B348C11A04B1B8E3D0515 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7C3E54927B04552A597B987 /* WidgetSnapshot.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -825,6 +953,11 @@
 			isa = PBXTargetDependency;
 			target = A50000000000000000000001 /* Barabari */;
 			targetProxy = AA00000000000000000000002 /* PBXContainerItemProxy */;
+		};
+		241E05918357405E913D3C75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 705A262C41D84F32A440390C /* BarabariWidgetExtension */;
+			targetProxy = B3CD8080F58B411499FA110C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -843,7 +976,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -860,7 +993,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -877,6 +1010,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MZ65MFRV8X;
 				GENERATE_INFOPLIST_FILE = NO;
+				CODE_SIGN_ENTITLEMENTS = Barabari/Barabari.entitlements;
 				INFOPLIST_FILE = Barabari/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Barabari;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -898,6 +1032,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MZ65MFRV8X;
 				GENERATE_INFOPLIST_FILE = NO;
+				CODE_SIGN_ENTITLEMENTS = Barabari/Barabari.entitlements;
 				INFOPLIST_FILE = Barabari/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Barabari;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -964,6 +1099,56 @@
 			};
 			name = Release;
 		};
+		D8F223D0D61949539A8807F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BarabariWidget/BarabariWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MZ65MFRV8X;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BarabariWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Barabari;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.Barabari.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		DBC7BA1ACEA840C38F9FCEC4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BarabariWidget/BarabariWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = MZ65MFRV8X;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BarabariWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Barabari;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nabeegh.Barabari.Widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -999,6 +1184,15 @@
 			buildConfigurations = (
 				AB00000000000000000000001 /* Debug */,
 				AB00000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		23C1EE1D63504265A0120AE7 /* Build configuration list for PBXNativeTarget "BarabariWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8F223D0D61949539A8807F7 /* Debug */,
+				DBC7BA1ACEA840C38F9FCEC4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -38,7 +38,7 @@ struct StatusBadge<Label: View>: View {
 extension StatusBadge where Label == Text {
     init(_ title: String, style: Style) {
         self.init(style: style) {
-            Text(title)
+            Text(LocalizedStringKey(title))
         }
     }
 }

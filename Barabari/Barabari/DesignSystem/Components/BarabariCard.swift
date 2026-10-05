@@ -1,51 +1,41 @@
 import SwiftUI
 
 struct BarabariCard<Content: View>: View {
+    private let padding: CGFloat
     private let content: Content
-    @Environment(\.colorScheme) private var colorScheme
 
-    init(@ViewBuilder content: () -> Content) {
+    init(padding: CGFloat = BarabariSpacing.card, @ViewBuilder content: () -> Content) {
+        self.padding = padding
         self.content = content()
     }
 
     var body: some View {
         content
-            .padding(BarabariSpacing.card)
-            .background(BarabariColors.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .padding(padding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(BarabariColors.surface, in: .rect(cornerRadius: BarabariSpacing.cardRadius))
             .overlay {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                BarabariColors.raised.opacity(colorScheme == .dark ? 0.92 : 0.72),
-                                BarabariColors.raised.opacity(colorScheme == .dark ? 0.48 : 0.46)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
+                RoundedRectangle(cornerRadius: BarabariSpacing.cardRadius, style: .continuous)
+                    .strokeBorder(BarabariColors.hairline, lineWidth: 1)
             }
-            .shadow(
-                color: .black.opacity(colorScheme == .dark ? 0.30 : 0.08),
-                radius: colorScheme == .dark ? 20 : 16,
-                y: colorScheme == .dark ? 8 : 6
-            )
     }
 }
 
+/// Springy press feedback used for every tappable card and tile.
 struct BarabariCardButtonStyle: ButtonStyle {
+    var pressedScale: CGFloat = 0.97
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .opacity(configuration.isPressed ? 0.86 : 1)
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.985 : 1)
-            .animation(
-                reduceMotion ? nil : .easeOut(duration: 0.18),
-                value: configuration.isPressed
-            )
+            .scaleEffect(configuration.isPressed && !reduceMotion ? pressedScale : 1)
+            .brightness(configuration.isPressed ? -0.02 : 0)
+            .animation(.spring(response: 0.28, dampingFraction: 0.62), value: configuration.isPressed)
     }
+}
+
+extension ButtonStyle where Self == BarabariCardButtonStyle {
+    static var pressable: BarabariCardButtonStyle { BarabariCardButtonStyle() }
 }
 
 #Preview {

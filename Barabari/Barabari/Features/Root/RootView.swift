@@ -9,6 +9,7 @@ struct RootView: View {
     @StateObject private var groupsViewModel: GroupsViewModel
     @StateObject private var addExpenseViewModel: AddExpenseViewModel
     @AppStorage("barabari.appearance") private var appearanceRawValue = "dark"
+    @Namespace private var groupTransition
 
     init(environment: AppEnvironment) {
         self.environment = environment
@@ -20,64 +21,78 @@ struct RootView: View {
     }
 
     var body: some View {
-        TabView(selection: $router.selectedTab) {
-            NavigationStack {
-                HomeView(viewModel: homeViewModel, revision: session.revision) {
-                    router.selectedTab = .groups
+        TabView(selection: tabSelection) {
+            Tab(LocalizedStringKey(AppTab.home.title), systemImage: AppTab.home.systemImage, value: AppTab.home) {
+                NavigationStack {
+                    HomeView(
+                        viewModel: homeViewModel,
+                        groupsViewModel: groupsViewModel,
+                        revision: session.revision,
+                        showGroups: { router.selectedTab = .groups },
+                        addExpense: { router.selectedTab = .addExpense },
+                        createGroup: {
+                            router.selectedTab = .groups
+                            router.isPresentingCreateGroup = true
+                        },
+                        joinGroup: { router.presentJoin() },
+                        selectGroup: { router.showGroup($0) }
+                    )
                 }
             }
-            .tag(AppTab.home)
 
-            NavigationStack(path: $router.groupPath) {
-                GroupsView(
-                    viewModel: groupsViewModel,
-                    revision: session.revision,
-                    onChanged: session.markChanged,
-                    selectGroup: { group in
-                        router.showGroup(group)
-                    },
-                    onJoin: { router.presentJoin() }
-                )
-                .navigationDestination(for: GroupRoute.self) { route in
-                    switch route {
-                    case let .detail(groupID):
-                        GroupDetailView(
-                            environment: environment,
-                            groupID: groupID,
-                            revision: session.revision,
-                            onChanged: session.markChanged,
-                            onInvite: { router.presentInvite(groupID: groupID) }
-                        )
+            Tab(LocalizedStringKey(AppTab.groups.title), systemImage: AppTab.groups.systemImage, value: AppTab.groups) {
+                NavigationStack(path: $router.groupPath) {
+                    GroupsView(
+                        viewModel: groupsViewModel,
+                        revision: session.revision,
+                        transitionNamespace: groupTransition,
+                        isPresentingCreateGroup: $router.isPresentingCreateGroup,
+                        onChanged: session.markChanged,
+                        selectGroup: { router.showGroup($0) },
+                        onJoin: { router.presentJoin() }
+                    )
+                    .navigationDestination(for: GroupRoute.self) { route in
+                        switch route {
+                        case let .detail(groupID):
+                            GroupDetailView(
+                                environment: environment,
+                                groupID: groupID,
+                                revision: session.revision,
+                                onChanged: session.markChanged,
+                                onInvite: { router.presentInvite(groupID: groupID) },
+                                onAddExpense: {
+                                    addExpenseViewModel.selectGroup(groupID)
+                                    router.selectedTab = .addExpense
+                                }
+                            )
+                            .navigationTransition(.zoom(sourceID: groupID, in: groupTransition))
+                        }
                     }
                 }
             }
-            .tag(AppTab.groups)
 
-            NavigationStack {
-                AddExpenseView(viewModel: addExpenseViewModel, session: session)
+            Tab(LocalizedStringKey(AppTab.activity.title), systemImage: AppTab.activity.systemImage, value: AppTab.activity) {
+                NavigationStack {
+                    ActivityView(environment: environment, revision: session.revision)
+                }
             }
-            .tag(AppTab.addExpense)
 
-            NavigationStack {
-                ActivityView(environment: environment, revision: session.revision)
+            Tab(LocalizedStringKey(AppTab.settings.title), systemImage: AppTab.settings.systemImage, value: AppTab.settings) {
+                NavigationStack {
+                    SettingsView(environment: environment, isDemo: environment.isDemo)
+                }
             }
-            .tag(AppTab.activity)
 
-            NavigationStack {
-                SettingsView(environment: environment, isDemo: environment.isDemo)
+            // The trailing, detached glass button: always one tap from a new expense.
+            Tab(LocalizedStringKey(AppTab.addExpense.title), systemImage: AppTab.addExpense.systemImage, value: AppTab.addExpense, role: .search) {
+                NavigationStack {
+                    AddExpenseView(viewModel: addExpenseViewModel, session: session)
+                }
             }
-            .tag(AppTab.settings)
         }
-        .toolbar(.hidden, for: .tabBar)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            BarabariTabBar(selection: $router.selectedTab)
-                .padding(.horizontal, 12)
-                .padding(.top, 5)
-                .padding(.bottom, 2)
-                .background(BarabariColors.background.opacity(0.94))
-        }
+        .tabBarMinimizeBehavior(.onScrollDown)
         .tint(BarabariColors.accent)
-        .background(BarabariColors.background)
+        .sensoryFeedback(.selection, trigger: router.selectedTab)
         .sheet(item: $router.invitePresentation) { presentation in
             switch presentation {
             case let .invite(groupID):
@@ -91,8 +106,19 @@ struct RootView: View {
             }
         }
         .onOpenURL { url in
-            router.presentJoin(url: url)
+            if url.host() == "home" {
+                router.selectedTab = .home
+            } else {
+                router.presentJoin(url: url)
+            }
         }
         .preferredColorScheme(BarabariAppearance(rawValue: appearanceRawValue)?.colorScheme)
+    }
+
+    private var tabSelection: Binding<AppTab> {
+        Binding(
+            get: { router.selectedTab },
+            set: { router.selectedTab = $0 }
+        )
     }
 }

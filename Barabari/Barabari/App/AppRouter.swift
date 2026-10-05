@@ -25,7 +25,7 @@ enum AppTab: String, CaseIterable, Hashable, Identifiable {
         case .home: "house.fill"
         case .groups: "person.2.fill"
         case .addExpense: "plus"
-        case .activity: "clock.fill"
+        case .activity: "list.bullet.rectangle.fill"
         case .settings: "gearshape.fill"
         }
     }
@@ -54,6 +54,7 @@ final class AppRouter: ObservableObject {
     @Published var selectedTab: AppTab = .home
     @Published var groupPath: [GroupRoute] = []
     @Published var invitePresentation: InvitePresentation?
+    @Published var isPresentingCreateGroup = false
 
     func showGroup(_ group: Group) {
         selectedTab = .groups
