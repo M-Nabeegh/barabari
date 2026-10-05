@@ -7,11 +7,7 @@ final class ExpenseFlowUITests: XCTestCase {
 
         app.buttons["Add"].tap()
 
-        let amount = app.textFields["expense-amount"]
-        XCTAssertTrue(amount.waitForExistence(timeout: 2))
-        amount.tap()
-        amount.typeText("1250")
-        dismissKeyboard(in: app)
+        enterAmount("1250", in: app)
 
         let title = app.textFields["expense-title"]
         XCTAssertTrue(title.exists)
@@ -42,11 +38,7 @@ final class ExpenseFlowUITests: XCTestCase {
         app.launch()
 
         app.buttons["Add"].tap()
-        let amount = app.textFields["expense-amount"]
-        XCTAssertTrue(amount.waitForExistence(timeout: 2))
-        amount.tap()
-        amount.typeText("1200")
-        dismissKeyboard(in: app)
+        enterAmount("1200", in: app)
 
         let title = app.textFields["expense-title"]
         title.tap()
@@ -74,7 +66,7 @@ final class ExpenseFlowUITests: XCTestCase {
         app.launch()
 
         app.buttons["Add"].tap()
-        enter("1250", into: app.textFields["expense-amount"], in: app)
+        enterAmount("1250", in: app)
         enter("Groceries", into: app.textFields["expense-title"], in: app)
 
         app.buttons["Paid by"].tap()
@@ -108,6 +100,16 @@ final class ExpenseFlowUITests: XCTestCase {
         return app
     }
 
+    /// Types on the custom keypad, then moves on to the details step.
+    private func enterAmount(_ digits: String, in app: XCUIApplication) {
+        XCTAssertTrue(app.descendants(matching: .any)["expense-amount"].waitForExistence(timeout: 2))
+        for digit in digits {
+            app.buttons["keypad-\(digit)"].tap()
+        }
+        app.buttons["expense-continue"].tap()
+        XCTAssertTrue(app.textFields["expense-title"].waitForExistence(timeout: 2))
+    }
+
     private func enter(_ text: String, into field: XCUIElement, in app: XCUIApplication) {
         XCTAssertTrue(field.waitForExistence(timeout: 2))
         field.tap()
@@ -116,7 +118,7 @@ final class ExpenseFlowUITests: XCTestCase {
     }
 
     private func dismissKeyboard(in app: XCUIApplication) {
-        let done = app.buttons["Done"]
+        let done = app.buttons["Done"].firstMatch
         if done.waitForExistence(timeout: 1) {
             done.tap()
         } else {

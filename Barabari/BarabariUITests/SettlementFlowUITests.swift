@@ -14,13 +14,11 @@ final class SettlementFlowUITests: XCTestCase {
         XCTAssertTrue(debtCard.waitForExistence(timeout: 2))
         debtCard.tap()
 
-        let amount = app.textFields["settlement-amount"]
-        XCTAssertTrue(amount.waitForExistence(timeout: 2))
-        amount.tap()
-        amount.typeText("500")
-        let done = app.buttons["Done"]
-        XCTAssertTrue(done.waitForExistence(timeout: 2))
-        done.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["settlement-amount"].waitForExistence(timeout: 2))
+        for digit in "500" {
+            app.buttons["keypad-\(digit)"].tap()
+        }
+        app.buttons["settlement-continue"].tap()
 
         app.buttons["Raast"].tap()
         app.swipeUp()
@@ -41,5 +39,34 @@ final class SettlementFlowUITests: XCTestCase {
         app.buttons["Activity"].tap()
         XCTAssertTrue(app.staticTexts["Settlement recorded"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Raast")).firstMatch.exists)
+    }
+
+    func testAddedPersonAppearsByNameInGroupAndExpenseSplit() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestingDemoState"]
+        app.launch()
+
+        app.buttons["Groups"].tap()
+        XCTAssertTrue(app.buttons["Barabari Demo"].waitForExistence(timeout: 2))
+        app.buttons["Barabari Demo"].tap()
+
+        let addPerson = app.buttons["add-person"]
+        XCTAssertTrue(addPerson.waitForExistence(timeout: 2))
+        addPerson.tap()
+
+        let name = app.textFields["person-name-field"]
+        XCTAssertTrue(name.waitForExistence(timeout: 2))
+        name.typeText("Ali")
+        app.buttons["person-name-save"].tap()
+
+        XCTAssertTrue(app.staticTexts["Ali"].waitForExistence(timeout: 2))
+
+        app.buttons["Add"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["expense-amount"].waitForExistence(timeout: 2))
+        for digit in "900" {
+            app.buttons["keypad-\(digit)"].tap()
+        }
+        app.buttons["expense-continue"].tap()
+        XCTAssertTrue(app.buttons["Split with Ali"].waitForExistence(timeout: 2))
     }
 }

@@ -3,7 +3,7 @@ import XCTest
 @testable import Barabari
 
 final class DesignSystemTests: XCTestCase {
-    func testAccentUsesInkInLightModeAndPearlInDarkMode() {
+    func testAccentIsEmeraldAndBrightensInDarkMode() {
         let light = UIColor(BarabariColors.accent).resolvedColor(with: UITraitCollection(userInterfaceStyle: .light))
         let dark = UIColor(BarabariColors.accent).resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))
 
@@ -16,29 +16,30 @@ final class DesignSystemTests: XCTestCase {
         XCTAssertTrue(light.getRed(&lightRed, green: &lightGreen, blue: &lightBlue, alpha: nil))
         XCTAssertTrue(dark.getRed(&darkRed, green: &darkGreen, blue: &darkBlue, alpha: nil))
 
-        XCTAssertLessThan(lightRed, 0.15)
-        XCTAssertLessThan(lightGreen, 0.16)
-        XCTAssertLessThan(lightBlue, 0.17)
-        XCTAssertGreaterThan(darkRed, 0.80)
-        XCTAssertGreaterThan(darkGreen, 0.80)
-        XCTAssertGreaterThan(darkBlue, 0.80)
+        // Green leads in both appearances so the brand reads as emerald.
+        XCTAssertGreaterThan(lightGreen, lightRed)
+        XCTAssertGreaterThan(lightGreen, lightBlue)
+        XCTAssertGreaterThan(darkGreen, darkRed)
+        XCTAssertGreaterThan(darkGreen, darkBlue)
+        // Dark mode uses a lighter emerald to keep contrast on black.
+        XCTAssertGreaterThan(darkGreen, lightGreen)
     }
 
     func testSpacingScaleIsStable() {
-        XCTAssertEqual(BarabariSpacing.screen, 16)
-        XCTAssertEqual(BarabariSpacing.section, 26)
+        XCTAssertEqual(BarabariSpacing.screen, 20)
+        XCTAssertEqual(BarabariSpacing.section, 28)
     }
 
     func testAmountFormatterConvertsPaisaAndGroupsPKR() {
         XCTAssertEqual(
             AmountFormatter.string(minorUnits: 325_050, currencyCode: "PKR"),
-            "PKR\u{00A0}3,250.5"
+            "Rs\u{00A0}3,250.5"
         )
     }
 
     func testAmountFormatterFormatsZeroAndNegativePKRAmounts() {
-        XCTAssertEqual(AmountFormatter.string(minorUnits: 0, currencyCode: "PKR"), "PKR\u{00A0}0")
-        XCTAssertEqual(AmountFormatter.string(minorUnits: -12_345, currencyCode: "PKR"), "-PKR\u{00A0}123.45")
+        XCTAssertEqual(AmountFormatter.string(minorUnits: 0, currencyCode: "PKR"), "Rs\u{00A0}0")
+        XCTAssertEqual(AmountFormatter.string(minorUnits: -12_345, currencyCode: "PKR"), "-Rs\u{00A0}123.45")
     }
 
     func testAmountFormatterPreservesNonPKRCurrencyCode() {
