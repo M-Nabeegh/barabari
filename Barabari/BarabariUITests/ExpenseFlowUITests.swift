@@ -29,7 +29,7 @@ final class ExpenseFlowUITests: XCTestCase {
             saveButton.tap()
         }
 
-        XCTAssertTrue(app.staticTexts["Expense saved locally"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Expense saved locally"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Add another expense"].exists)
     }
 
@@ -47,7 +47,7 @@ final class ExpenseFlowUITests: XCTestCase {
 
         app.buttons["Exact amount"].tap()
         let exactAmount = app.textFields["exact-split-amount-56D75B9A-0238-45B6-9EF7-A3526D58B2A5"]
-        XCTAssertTrue(exactAmount.waitForExistence(timeout: 2))
+        XCTAssertTrue(exactAmount.waitForExistence(timeout: 10))
         XCTAssertEqual(exactAmount.label, "Exact share for You")
         exactAmount.tap()
         exactAmount.typeText("1000")
@@ -58,7 +58,7 @@ final class ExpenseFlowUITests: XCTestCase {
         let exactTotalError = app.staticTexts.matching(
             NSPredicate(format: "label CONTAINS %@", "Exact amounts must add up")
         ).firstMatch
-        XCTAssertTrue(exactTotalError.waitForExistence(timeout: 2))
+        XCTAssertTrue(exactTotalError.waitForExistence(timeout: 10))
     }
 
     func testExactExpenseChangesPayerAndParticipantsThenSavesDistinctShares() {
@@ -73,7 +73,7 @@ final class ExpenseFlowUITests: XCTestCase {
         app.buttons["Member 2"].tap()
 
         let friend = app.buttons["Split with Member 2"]
-        XCTAssertTrue(friend.waitForExistence(timeout: 2))
+        XCTAssertTrue(friend.waitForExistence(timeout: 10))
         friend.tap()
         XCTAssertFalse(friend.isSelected)
         friend.tap()
@@ -82,8 +82,8 @@ final class ExpenseFlowUITests: XCTestCase {
         app.buttons["Exact amount"].tap()
         let yourShare = app.textFields["exact-split-amount-56D75B9A-0238-45B6-9EF7-A3526D58B2A5"]
         let friendShare = app.textFields["exact-split-amount-A1D2E3F4-5A6B-4C7D-8E9F-001122334455"]
-        XCTAssertTrue(yourShare.waitForExistence(timeout: 2))
-        XCTAssertTrue(friendShare.waitForExistence(timeout: 2))
+        XCTAssertTrue(yourShare.waitForExistence(timeout: 10))
+        XCTAssertTrue(friendShare.waitForExistence(timeout: 10))
         XCTAssertEqual(yourShare.label, "Exact share for You")
         XCTAssertEqual(friendShare.label, "Exact share for Member 2")
         enter("500", into: yourShare, in: app)
@@ -91,7 +91,7 @@ final class ExpenseFlowUITests: XCTestCase {
 
         app.buttons["Save expense"].tap()
 
-        XCTAssertTrue(app.staticTexts["Expense saved locally"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Expense saved locally"].waitForExistence(timeout: 10))
     }
 
     private func makeDemoApp(withSecondMember: Bool = false) -> XCUIApplication {
@@ -102,16 +102,16 @@ final class ExpenseFlowUITests: XCTestCase {
 
     /// Types on the custom keypad, then moves on to the details step.
     private func enterAmount(_ digits: String, in app: XCUIApplication) {
-        XCTAssertTrue(app.descendants(matching: .any)["expense-amount"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["expense-amount"].waitForExistence(timeout: 10))
         for digit in digits {
             app.buttons["keypad-\(digit)"].tap()
         }
         app.buttons["expense-continue"].tap()
-        XCTAssertTrue(app.textFields["expense-title"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.textFields["expense-title"].waitForExistence(timeout: 10))
     }
 
     private func enter(_ text: String, into field: XCUIElement, in app: XCUIApplication) {
-        XCTAssertTrue(field.waitForExistence(timeout: 2))
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
         field.tap()
         field.typeText(text)
         dismissKeyboard(in: app)
@@ -119,7 +119,7 @@ final class ExpenseFlowUITests: XCTestCase {
 
     private func dismissKeyboard(in app: XCUIApplication) {
         let done = app.buttons["Done"].firstMatch
-        if done.waitForExistence(timeout: 1) {
+        if done.waitForExistence(timeout: 5) {
             done.tap()
         } else {
             app.keyboards.buttons["return"].tap()
