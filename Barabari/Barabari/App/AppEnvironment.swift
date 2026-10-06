@@ -18,6 +18,8 @@ struct AppEnvironment {
     let isDemo: Bool
     /// Present only for the on-device ledger of a build configured for Supabase.
     let syncConfiguration: SyncConfiguration?
+    /// Personal wallets, transactions and budgets, kept apart from the shared ledger.
+    let personalFinance: PersonalFinanceStore
 
     static let live = AppEnvironment(inMemory: false, syncConfiguration: SyncConfiguration.fromBundle())
     static let demo = AppEnvironment(inMemory: true, seedDemoData: true)
@@ -41,6 +43,7 @@ struct AppEnvironment {
                 )
             }
             modelContainer = container
+            personalFinance = try PersonalFinanceStore(inMemory: inMemory)
             groupRepository = LocalGroupRepository(container: container)
             expenseRepository = LocalExpenseRepository(container: container)
             settlementRepository = LocalSettlementRepository(container: container)

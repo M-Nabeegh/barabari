@@ -50,7 +50,8 @@ final class HomeViewModel: ObservableObject {
     private func fetchHome() async {
         do {
             let groups = try await environment.groupRepository.listGroups()
-            guard !groups.isEmpty else {
+            // Someone who only tracks personal money still gets the full Home.
+            guard !groups.isEmpty || !environment.personalFinance.transactions.isEmpty else {
                 homeState = .empty
                 return
             }
@@ -105,9 +106,13 @@ extension HomeViewModel {
         return expenses
     }
 
-    /// Your own share of every expense, grouped by category, largest first.
+    /// Your personal spending plus your share of every group expense, by category, largest first.
     func spendingByCategory(expenses: [Expense]) -> [CategorySpend] {
         var totals: [ExpenseCategory: Int64] = [:]
+        for transaction in environment.personalFinance.transactions {
+            guard let category = transaction.expenseCategory else { continue }
+            totals[category, default: 0] += transaction.amountMinor
+        }
         for expense in expenses {
             guard let share = expense.splits.first(where: { $0.userID == environment.currentUserID }) else { continue }
             totals[metadata.category(for: expense), default: 0] += share.amount.minorUnits

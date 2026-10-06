@@ -7,12 +7,17 @@ final class NavigationUITests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["Group created"].waitForExistence(timeout: 10))
 
-        for tab in ["Home", "Groups", "Add", "Activity", "Settings"] {
+        for tab in ["Home", "Groups", "Money", "Add", "Activity"] {
             let button = app.buttons[tab]
             XCTAssertTrue(button.waitForExistence(timeout: 10), "Expected \(tab) to be available in main navigation")
             button.tap()
             XCTAssertTrue(button.isSelected || app.navigationBars[tab == "Add" ? "Add expense" : tab].exists)
         }
+
+        // Settings opens from the profile button on Home.
+        app.buttons["Home"].tap()
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
     }
 
     func testPrimaryDestinationsStayReachableAfterRepeatedSwitching() {
@@ -22,14 +27,14 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Group created"].waitForExistence(timeout: 10))
 
         for _ in 0..<2 {
-            for tab in ["Home", "Groups", "Add", "Activity", "Settings"] {
+            for tab in ["Home", "Groups", "Money", "Add", "Activity"] {
                 let button = app.buttons[tab]
                 XCTAssertTrue(button.waitForExistence(timeout: 10))
                 button.tap()
             }
         }
 
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 10))
     }
 
     func testSwitchingTabsFromAmountEntryTakesOneTap() {
@@ -42,9 +47,9 @@ final class NavigationUITests: XCTestCase {
 
         // The custom keypad never raises the system keyboard, so the tab bar stays reachable.
         XCTAssertFalse(app.keyboards.firstMatch.exists)
-        app.buttons["Settings"].tap()
+        app.buttons["Activity"].tap()
 
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Activity"].waitForExistence(timeout: 10))
     }
 
     func testEmptyGroupsOfferCreateAndJoin() {
@@ -69,6 +74,7 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Expense"].waitForExistence(timeout: 10))
 
         app.buttons["BackButton"].tap()
+        app.buttons["Home"].tap()
         app.buttons["Settings"].tap()
         XCTAssertTrue(app.staticTexts["Local demo: data stays on this iPhone."].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Prepare JSON export"].exists)

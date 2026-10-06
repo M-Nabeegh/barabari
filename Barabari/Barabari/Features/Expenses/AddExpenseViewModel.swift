@@ -24,6 +24,7 @@ final class AddExpenseViewModel: ObservableObject {
         didSet {
             clearValidationIfNeeded()
             if !hasChosenCategory { detectedCategory = ExpenseCategory.detect(from: title) }
+            if !hasChosenIncomeCategory { incomeCategory = IncomeCategory.detect(from: title) ?? .other }
         }
     }
     /// Auto-detected from the title until the person picks one themselves.
@@ -47,6 +48,17 @@ final class AddExpenseViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var isSaving = false
     @Published private(set) var savedExpense: Expense?
+
+    // MARK: Personal ("Just me") entries
+    @Published private(set) var isPersonal = false
+    @Published var personalKind: TransactionKind = .expense
+    @Published var personalWalletID: UUID?
+    @Published var personalDate = Date()
+    @Published private(set) var incomeCategory: IncomeCategory = .other
+    @Published private(set) var hasChosenIncomeCategory = false
+    @Published private(set) var savedPersonal: MoneyTransaction?
+    /// Set after a save that pushed a budget to 80% or past its limit.
+    @Published private(set) var budgetAlert: BudgetProgress?
 
     private let environment: AppEnvironment
     private let metadata: LedgerMetadata
@@ -73,6 +85,11 @@ final class AddExpenseViewModel: ObservableObject {
 
         do {
             groups = try await environment.groupRepository.listGroups()
+            if groups.isEmpty { isPersonal = true }
+            let wallets = environment.personalFinance.activeWallets
+            if personalWalletID == nil || !wallets.contains(where: { $0.id == personalWalletID }) {
+                personalWalletID = wallets.first?.id
+            }
             if selectedGroupID == nil || !groups.contains(where: { $0.id == selectedGroupID }) {
                 selectedGroupID = groups.first?.id
             }
@@ -83,7 +100,26 @@ final class AddExpenseViewModel: ObservableObject {
         }
     }
 
+    var wallets: [Wallet] { environment.personalFinance.activeWallets }
+
+    func walletBalance(_ id: UUID) -> Int64 { environment.personalFinance.balance(of: id) }
+
+    func personalFinanceWalletName(_ id: UUID) -> String {
+        environment.personalFinance.wallet(id: id)?.name ?? "your wallet"
+    }
+
+    func choosePersonal() {
+        isPersonal = true
+        validationMessage = nil
+    }
+
+    func chooseIncomeCategory(_ category: IncomeCategory) {
+        hasChosenIncomeCategory = true
+        incomeCategory = category
+    }
+
     func selectGroup(_ id: UUID) {
+        isPersonal = false
         guard selectedGroupID != id else { return }
         selectedGroupID = id
         beginMemberLoad(for: id)
@@ -136,6 +172,59 @@ final class AddExpenseViewModel: ObservableObject {
         previewSplits = []
         validationMessage = nil
         savedExpense = nil
+        savedPersonal = nil
+        budgetAlert = nil
+        hasChosenIncomeCategory = false
+        incomeCategory = .other
+        personalDate = Date()
+    }
+
+    /// Saves a personal expense or income to the chosen wallet.
+    @discardableResult
+    func savePersonal() async -> Bool {
+        guard !isSaving else { return false }
+        validationMessage = nil
+        isSaving = true
+        defer { isSaving = false }
+        do {
+            let money = try parseMoney(amountText)
+            guard let walletID = personalWalletID else { throw PersonalFinanceError.missingWallet }
+            let saved = try environment.personalFinance.addTransaction(
+                kind: personalKind,
+                title: title,
+                amountMinor: money.minorUnits,
+                categoryRaw: personalKind == .expense ? category.rawValue : incomeCategory.rawValue,
+                walletID: walletID,
+                occurredAt: personalDate
+            )
+            savedPersonal = saved
+            if let category = saved.expenseCategory {
+                budgetAlert = await budgetWarning(for: category, in: MonthPeriod(containing: saved.occurredAt))
+            }
+            return true
+        } catch let error as PersonalFinanceError {
+            validationMessage = error.errorDescription
+            return false
+        } catch {
+            validationMessage = message(for: error)
+            return false
+        }
+    }
+
+    /// A budget that is at 80% or more for the month, including your share of group expenses.
+    private func budgetWarning(for category: ExpenseCategory, in month: MonthPeriod) async -> BudgetProgress? {
+        let finance = environment.personalFinance
+        guard finance.budgets[category] != nil else { return nil }
+        var expenses: [Expense] = []
+        for group in groups {
+            expenses += (try? await environment.expenseRepository.listExpenses(groupID: group.id, cursor: nil).items) ?? []
+        }
+        let shares = GroupShareCalculator.shares(expenses: expenses, currentUserID: environment.currentUserID, month: month) {
+            metadata.category(for: $0)
+        }
+        let progress = finance.budgetProgress(in: month, groupShares: shares).first { $0.category == category }
+        guard let progress, progress.level != .fine else { return nil }
+        return progress
     }
 
     @discardableResult
@@ -153,6 +242,7 @@ final class AddExpenseViewModel: ObservableObject {
                 groupRepository: environment.groupRepository
             ).call(draft: draft, idempotencyKey: UUID())
             metadata.setCategory(category, for: expense.id)
+            budgetAlert = await budgetWarning(for: category, in: MonthPeriod(containing: expense.occurredAt))
             savedExpense = expense
             previewSplits = expense.splits
             return true

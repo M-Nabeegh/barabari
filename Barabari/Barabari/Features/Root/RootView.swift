@@ -39,6 +39,7 @@ struct RootView: View {
                             router.isPresentingCreateGroup = true
                         },
                         joinGroup: { router.presentJoin() },
+                        openSettings: { router.isShowingSettings = true },
                         selectGroup: { router.showGroup($0) }
                     )
                 }
@@ -75,17 +76,21 @@ struct RootView: View {
                 }
             }
 
+            Tab(LocalizedStringKey(AppTab.money.title), systemImage: AppTab.money.systemImage, value: AppTab.money) {
+                NavigationStack {
+                    MoneyView(environment: environment, revision: session.revision) {
+                        addExpenseViewModel.choosePersonal()
+                        router.selectedTab = .addExpense
+                    }
+                }
+            }
+
             Tab(LocalizedStringKey(AppTab.activity.title), systemImage: AppTab.activity.systemImage, value: AppTab.activity) {
                 NavigationStack {
                     ActivityView(environment: environment, revision: session.revision)
                 }
             }
 
-            Tab(LocalizedStringKey(AppTab.settings.title), systemImage: AppTab.settings.systemImage, value: AppTab.settings) {
-                NavigationStack {
-                    SettingsView(environment: environment, isDemo: environment.isDemo)
-                }
-            }
 
             // The trailing, detached glass button: always one tap from a new expense.
             Tab(LocalizedStringKey(AppTab.addExpense.title), systemImage: AppTab.addExpense.systemImage, value: AppTab.addExpense, role: .search) {
@@ -97,6 +102,13 @@ struct RootView: View {
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(BarabariColors.accent)
         .sensoryFeedback(.selection, trigger: router.selectedTab)
+        .onChange(of: router.selectedTab) { previous, _ in
+            // Leaving Add after a save: start fresh next time instead of showing the old receipt.
+            if previous == .addExpense,
+               addExpenseViewModel.savedExpense != nil || addExpenseViewModel.savedPersonal != nil {
+                addExpenseViewModel.addAnotherExpense()
+            }
+        }
         .onChange(of: session.localWrites) { _, _ in sync.localDataChanged() }
         .onChange(of: metadata.ownerName) { _, _ in sync.localDataChanged() }
         .onChange(of: sync.remoteChangeCount) { _, _ in session.markRemoteChanged() }
@@ -117,6 +129,17 @@ struct RootView: View {
                     router.dismissInvitePresentation()
                     router.showGroup(group)
                 }
+            }
+        }
+        .sheet(isPresented: $router.isShowingSettings) {
+            NavigationStack {
+                SettingsView(environment: environment, isDemo: environment.isDemo)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done", systemImage: "checkmark") { router.isShowingSettings = false }
+                                .accessibilityIdentifier("settings-done")
+                        }
+                    }
             }
         }
         .onOpenURL { url in

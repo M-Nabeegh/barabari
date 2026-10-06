@@ -118,6 +118,13 @@
 		14128CD3CC794F5285445CB8 /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9322A1781F4068ABF902B1 /* SyncEngine.swift */; };
 		2D5594EB60704F1A90994F4F /* SyncEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9D59967F934D0D83E15698 /* SyncEngineTests.swift */; };
 		09CC02C15FE047E8815417A3 /* CloudSyncViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B48588B08145D5867AEA11 /* CloudSyncViews.swift */; };
+		9F6B18C3EA9848EEA3A656F5 /* PersonalFinance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C1330098044B3597D937CE /* PersonalFinance.swift */; };
+		AAE56C5073F44D0A81C00B43 /* PersonalFinanceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6773EEC21CFB466ABCF4A5F5 /* PersonalFinanceStore.swift */; };
+		63711334B32B4B6993A6BDA4 /* PersonalFinanceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A477718D9ED4A049AF3564A /* PersonalFinanceStoreTests.swift */; };
+		EACCB8E0CC7F4BCDBE0E1017 /* WalletViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D805B8E8AA68426CB07CD837 /* WalletViews.swift */; };
+		47225FA54EDF49E2BC4FD47A /* MoneyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28320E8459944A5396CF67CE /* MoneyView.swift */; };
+		2219C5365F034D6F96D2CA35 /* MoneySheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10D70F3CF5BD46C3A6938471 /* MoneySheets.swift */; };
+		454F7C4F6E744157B1D360E9 /* MoneyFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003993B5B9BB4E6485EFC8F8 /* MoneyFlowUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -295,6 +302,13 @@
 		EE9322A1781F4068ABF902B1 /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
 		BC9D59967F934D0D83E15698 /* SyncEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngineTests.swift; sourceTree = "<group>"; };
 		64B48588B08145D5867AEA11 /* CloudSyncViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncViews.swift; sourceTree = "<group>"; };
+		B1C1330098044B3597D937CE /* PersonalFinance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalFinance.swift; sourceTree = "<group>"; };
+		6773EEC21CFB466ABCF4A5F5 /* PersonalFinanceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalFinanceStore.swift; sourceTree = "<group>"; };
+		8A477718D9ED4A049AF3564A /* PersonalFinanceStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalFinanceStoreTests.swift; sourceTree = "<group>"; };
+		D805B8E8AA68426CB07CD837 /* WalletViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViews.swift; sourceTree = "<group>"; };
+		28320E8459944A5396CF67CE /* MoneyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyView.swift; sourceTree = "<group>"; };
+		10D70F3CF5BD46C3A6938471 /* MoneySheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneySheets.swift; sourceTree = "<group>"; };
+		003993B5B9BB4E6485EFC8F8 /* MoneyFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyFlowUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -410,6 +424,7 @@
 				A20000000000000000000050 /* NavigationUITests.swift */,
 				A20000000000000000000059 /* ExpenseFlowUITests.swift */,
 				A20000000000000000000066 /* SettlementFlowUITests.swift */,
+				003993B5B9BB4E6485EFC8F8 /* MoneyFlowUITests.swift */,
 				A20000000000000000000093 /* InviteFlowUITests.swift */,
 			);
 			path = BarabariUITests;
@@ -482,6 +497,7 @@
 				A20000000000000000000029 /* GroupMember.swift */,
 				A20000000000000000000030 /* Expense.swift */,
 				C1100314F5174B69B43DEF31 /* ExpenseCategory.swift */,
+				B1C1330098044B3597D937CE /* PersonalFinance.swift */,
 				A20000000000000000000031 /* Settlement.swift */,
 				A20000000000000000000032 /* ActivityEvent.swift */,
 				A20000000000000000000033 /* BalanceSummary.swift */,
@@ -524,6 +540,7 @@
 		A40000000000000000000016 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				8B0338E6BAEF4602B61AECC1 /* Personal */,
 				D609840EB63A4625AD804C1C /* Sync */,
 				A40000000000000000000017 /* SwiftData */,
 				A40000000000000000000018 /* LocalRepositories */,
@@ -557,6 +574,7 @@
 			children = (
 				A20000000000000000000049 /* SwiftDataRepositoryTests.swift */,
 				A8BBA59C49944BBF9F5A36CC /* SyncFoundationTests.swift */,
+				8A477718D9ED4A049AF3564A /* PersonalFinanceStoreTests.swift */,
 				BC9D59967F934D0D83E15698 /* SyncEngineTests.swift */,
 				09827440EAF14C988F3703EB /* LocalSyncStoreTests.swift */,
 				751B10DB7CA34BF0B801EA64 /* SupabaseClientTests.swift */,
@@ -567,6 +585,7 @@
 		A40000000000000000000020 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				95CAD1FB81BE4F7083AB6BCB /* Money */,
 				A40000000000000000000021 /* Root */,
 				A40000000000000000000022 /* Home */,
 				A40000000000000000000023 /* Groups */,
@@ -696,6 +715,24 @@
 				3E7812B5B5AC4F888EA0D085 /* LocalIdentity.swift */,
 			);
 			path = Sync;
+			sourceTree = "<group>";
+		};
+		8B0338E6BAEF4602B61AECC1 /* Personal */ = {
+			isa = PBXGroup;
+			children = (
+				6773EEC21CFB466ABCF4A5F5 /* PersonalFinanceStore.swift */,
+			);
+			path = Personal;
+			sourceTree = "<group>";
+		};
+		95CAD1FB81BE4F7083AB6BCB /* Money */ = {
+			isa = PBXGroup;
+			children = (
+				D805B8E8AA68426CB07CD837 /* WalletViews.swift */,
+				10D70F3CF5BD46C3A6938471 /* MoneySheets.swift */,
+				28320E8459944A5396CF67CE /* MoneyView.swift */,
+			);
+			path = Money;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -883,6 +920,7 @@
 				A10000000000000000000026 /* GroupMember.swift in Sources */,
 				A10000000000000000000027 /* Expense.swift in Sources */,
 				29311F58E2B54DDFBEE8512B /* ExpenseCategory.swift in Sources */,
+				9F6B18C3EA9848EEA3A656F5 /* PersonalFinance.swift in Sources */,
 				A10000000000000000000028 /* Settlement.swift in Sources */,
 				A10000000000000000000029 /* ActivityEvent.swift in Sources */,
 				A10000000000000000000030 /* BalanceSummary.swift in Sources */,
@@ -898,6 +936,7 @@
 				A10000000000000000000040 /* SwiftDataModels.swift in Sources */,
 				A10000000000000000000041 /* BarabariModelContainer.swift in Sources */,
 				A10000000000000000000042 /* LocalGroupRepository.swift in Sources */,
+				AAE56C5073F44D0A81C00B43 /* PersonalFinanceStore.swift in Sources */,
 				EFB2A19FD1454C3E9D1FD016 /* SyncConfiguration.swift in Sources */,
 				14128CD3CC794F5285445CB8 /* SyncEngine.swift in Sources */,
 				41ECA2B327C142F1B33A2F06 /* LocalSyncStore.swift in Sources */,
@@ -911,6 +950,9 @@
 				A10000000000000000000049 /* RootView.swift in Sources */,
 				B19D3707439A4107ADD7405B /* OnboardingView.swift in Sources */,
 				A10000000000000000000050 /* HomeView.swift in Sources */,
+				EACCB8E0CC7F4BCDBE0E1017 /* WalletViews.swift in Sources */,
+				2219C5365F034D6F96D2CA35 /* MoneySheets.swift in Sources */,
+				47225FA54EDF49E2BC4FD47A /* MoneyView.swift in Sources */,
 				A10000000000000000000051 /* HomeViewModel.swift in Sources */,
 				A10000000000000000000052 /* GroupsView.swift in Sources */,
 				A10000000000000000000053 /* GroupsViewModel.swift in Sources */,
@@ -959,6 +1001,7 @@
 				A10000000000000000000023 /* LedgerUseCaseTests.swift in Sources */,
 				A10000000000000000000046 /* SwiftDataRepositoryTests.swift in Sources */,
 				1B4CF6167F2B4E0DA70628C7 /* SyncFoundationTests.swift in Sources */,
+				63711334B32B4B6993A6BDA4 /* PersonalFinanceStoreTests.swift in Sources */,
 				2D5594EB60704F1A90994F4F /* SyncEngineTests.swift in Sources */,
 				ECEBA9CF2EFB476EBFE2D867 /* LocalSyncStoreTests.swift in Sources */,
 				A38CDAC219444231B01661C6 /* SupabaseClientTests.swift in Sources */,
@@ -981,6 +1024,7 @@
 				A10000000000000000000047 /* NavigationUITests.swift in Sources */,
 				A10000000000000000000056 /* ExpenseFlowUITests.swift in Sources */,
 				A10000000000000000000063 /* SettlementFlowUITests.swift in Sources */,
+				454F7C4F6E744157B1D360E9 /* MoneyFlowUITests.swift in Sources */,
 				A10000000000000000000090 /* InviteFlowUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
