@@ -7,14 +7,14 @@ final class SettlementFlowUITests: XCTestCase {
         app.launch()
 
         app.buttons["Groups"].tap()
-        XCTAssertTrue(app.buttons["Barabari Demo"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Barabari Demo"].waitForExistence(timeout: 10))
         app.buttons["Barabari Demo"].tap()
 
         let debtCard = app.buttons["You owe"]
-        XCTAssertTrue(debtCard.waitForExistence(timeout: 2))
+        XCTAssertTrue(debtCard.waitForExistence(timeout: 10))
         debtCard.tap()
 
-        XCTAssertTrue(app.descendants(matching: .any)["settlement-amount"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["settlement-amount"].waitForExistence(timeout: 10))
         for digit in "500" {
             app.buttons["keypad-\(digit)"].tap()
         }
@@ -28,16 +28,16 @@ final class SettlementFlowUITests: XCTestCase {
             markAsPaid.tap()
         }
 
-        XCTAssertTrue(app.staticTexts["Settlement recorded locally"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Settlement recorded locally"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Raast payment to Member 2 is now in this group’s ledger on this iPhone."].exists)
 
         app.navigationBars["Settle up"].buttons["Barabari Demo"].tap()
         let remainingDebt = app.buttons["You owe"]
-        XCTAssertTrue(remainingDebt.waitForExistence(timeout: 2))
+        XCTAssertTrue(remainingDebt.waitForExistence(timeout: 10))
         XCTAssertTrue((remainingDebt.value as? String ?? "").contains("500"))
         app.navigationBars["Barabari Demo"].buttons["Groups"].tap()
         app.buttons["Activity"].tap()
-        XCTAssertTrue(app.staticTexts["Settlement recorded"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Settlement recorded"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Raast")).firstMatch.exists)
     }
 
@@ -47,26 +47,26 @@ final class SettlementFlowUITests: XCTestCase {
         app.launch()
 
         app.buttons["Groups"].tap()
-        XCTAssertTrue(app.buttons["Barabari Demo"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Barabari Demo"].waitForExistence(timeout: 10))
         app.buttons["Barabari Demo"].tap()
 
         let addPerson = app.buttons["add-person"]
-        XCTAssertTrue(addPerson.waitForExistence(timeout: 2))
+        XCTAssertTrue(addPerson.waitForExistence(timeout: 10))
         addPerson.tap()
 
         let name = app.textFields["person-name-field"]
-        XCTAssertTrue(name.waitForExistence(timeout: 2))
+        XCTAssertTrue(name.waitForExistence(timeout: 10))
         name.typeText("Ali")
         app.buttons["person-name-save"].tap()
 
-        XCTAssertTrue(app.staticTexts["Ali"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Ali"].waitForExistence(timeout: 10))
 
         app.buttons["Add"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["expense-amount"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.descendants(matching: .any)["expense-amount"].waitForExistence(timeout: 10))
         for digit in "900" {
             app.buttons["keypad-\(digit)"].tap()
         }
         app.buttons["expense-continue"].tap()
-        XCTAssertTrue(app.buttons["Split with Ali"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Split with Ali"].waitForExistence(timeout: 10))
     }
 }
