@@ -97,7 +97,6 @@ struct RootView: View {
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(BarabariColors.accent)
         .sensoryFeedback(.selection, trigger: router.selectedTab)
-        .environment(\.syncEngine, sync.isEnabled ? sync : nil)
         .onChange(of: session.localWrites) { _, _ in sync.localDataChanged() }
         .onChange(of: metadata.ownerName) { _, _ in sync.localDataChanged() }
         .onChange(of: sync.remoteChangeCount) { _, _ in session.markRemoteChanged() }
@@ -128,6 +127,8 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(BarabariAppearance(rawValue: appearanceRawValue)?.colorScheme)
+        // Outermost, so sheets (invites, joins) see the sync engine too.
+        .environment(\.syncEngine, sync.isEnabled ? sync : nil)
     }
 
     private var tabSelection: Binding<AppTab> {

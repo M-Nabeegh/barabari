@@ -182,6 +182,10 @@ struct ActivityView: View {
         if row.event.kind == .expenseCreated, let expense = row.expense {
             return expense.title
         }
+        if row.event.kind == .memberJoined, row.event.actorUserID != currentUserID,
+           let name = metadata.names[row.event.actorUserID] {
+            return "\(name) joined"
+        }
         return row.event.kind.title
     }
 

@@ -50,7 +50,9 @@ struct GroupInviteView: View {
             Text("Invite to \(payload.groupName)")
                 .font(.title2.weight(.bold))
                 .multilineTextAlignment(.center)
-            Text("Share this link or let someone scan the code to join this local ledger.")
+            Text(syncEngine == nil
+                 ? "Share this link or let someone scan the code to join this local ledger."
+                 : "Share this link or let someone scan the code to join from their own phone.")
                 .font(BarabariTypography.metadata)
                 .foregroundStyle(BarabariColors.textSecondary)
                 .multilineTextAlignment(.center)
