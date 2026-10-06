@@ -271,9 +271,11 @@ create policy "own profile" on public.profiles
 create policy "members read groups" on public.groups
     for select to authenticated
     using (owner_id = public.app_uid() or public.is_group_member(id));
+-- Members may also "insert": a PostgREST upsert of an existing group checks the
+-- insert rule even when it ends up updating.
 create policy "owners create groups" on public.groups
     for insert to authenticated
-    with check (owner_id = public.app_uid());
+    with check (owner_id = public.app_uid() or public.is_group_member(id));
 create policy "members update groups" on public.groups
     for update to authenticated
     using (owner_id = public.app_uid() or public.is_group_member(id))

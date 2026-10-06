@@ -15,6 +15,16 @@ Barabari syncs through one Supabase project: Postgres, Auth and PostgREST. No cu
 
 Migrations in `migrations/` are applied in order through the Supabase MCP server (`apply_migration`) or the dashboard SQL editor.
 
+## Tests
+
+`tests/` holds SQL checks for row level security, invites, spot claiming and the sync rules. CI runs them against Postgres 17 on every change under `supabase/`. To run them locally:
+
+```sh
+psql -d barabari -f supabase/tests/00_supabase_stub.sql
+psql -d barabari -f supabase/migrations/20261006120000_barabari_schema.sql
+psql -d barabari -f supabase/tests/10_rls_and_sync_rules.sql
+```
+
 ## Project settings
 
 - **Authentication → Sign In / Providers → Allow anonymous sign-ins:** on
