@@ -117,6 +117,7 @@
 		ECEBA9CF2EFB476EBFE2D867 /* LocalSyncStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09827440EAF14C988F3703EB /* LocalSyncStoreTests.swift */; };
 		14128CD3CC794F5285445CB8 /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9322A1781F4068ABF902B1 /* SyncEngine.swift */; };
 		2D5594EB60704F1A90994F4F /* SyncEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC9D59967F934D0D83E15698 /* SyncEngineTests.swift */; };
+		09CC02C15FE047E8815417A3 /* CloudSyncViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B48588B08145D5867AEA11 /* CloudSyncViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -293,6 +294,7 @@
 		09827440EAF14C988F3703EB /* LocalSyncStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSyncStoreTests.swift; sourceTree = "<group>"; };
 		EE9322A1781F4068ABF902B1 /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
 		BC9D59967F934D0D83E15698 /* SyncEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngineTests.swift; sourceTree = "<group>"; };
+		64B48588B08145D5867AEA11 /* CloudSyncViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -668,6 +670,7 @@
 			children = (
 				A20000000000000000000071 /* SettingsView.swift */,
 				EED9373B555443789F8BB4AA /* AppLock.swift */,
+				64B48588B08145D5867AEA11 /* CloudSyncViews.swift */,
 				A20000000000000000000072 /* SettingsViewModel.swift */,
 				A20000000000000000000081 /* LocalLedgerExport.swift */,
 			);
@@ -925,6 +928,7 @@
 				A10000000000000000000067 /* ActivityView.swift in Sources */,
 				A10000000000000000000068 /* SettingsView.swift in Sources */,
 				7EA60B7009CA4DE2BA9D0DE3 /* AppLock.swift in Sources */,
+				09CC02C15FE047E8815417A3 /* CloudSyncViews.swift in Sources */,
 				A10000000000000000000069 /* SettingsViewModel.swift in Sources */,
 				A10000000000000000000073 /* LedgerSession.swift in Sources */,
 				320EB5D9BA2A4EE3A1E8F8C1 /* LedgerMetadata.swift in Sources */,

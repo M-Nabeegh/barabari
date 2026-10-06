@@ -113,7 +113,7 @@ struct RootView: View {
             case let .invite(groupID):
                 GroupInviteView(environment: environment, groupID: groupID)
             case let .join(url):
-                JoinGroupView(environment: environment, initialURL: url) { group in
+                JoinGroupView(environment: environment, sync: sync.isEnabled ? sync : nil, initialURL: url) { group in
                     session.markChanged()
                     router.dismissInvitePresentation()
                     router.showGroup(group)

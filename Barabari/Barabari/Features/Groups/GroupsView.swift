@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GroupsView: View {
     @ObservedObject var viewModel: GroupsViewModel
+    @Environment(\.syncEngine) private var syncEngine
     let revision: Int
     let transitionNamespace: Namespace.ID
     @Binding var isPresentingCreateGroup: Bool
@@ -50,7 +51,10 @@ struct GroupsView: View {
             }
         }
         .task(id: revision) { await viewModel.refresh() }
-        .refreshable { await viewModel.refresh() }
+        .refreshable {
+            await syncEngine?.syncNow()
+            await viewModel.refresh()
+        }
         .sheet(isPresented: $isPresentingCreateGroup) {
             CreateGroupSheet { name, description in
                 guard let group = await viewModel.createGroup(name: name, description: description) else {
