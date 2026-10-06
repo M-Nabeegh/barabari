@@ -113,6 +113,8 @@
 		1B4CF6167F2B4E0DA70628C7 /* SyncFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BBA59C49944BBF9F5A36CC /* SyncFoundationTests.swift */; };
 		2924CD268B864CC7833FEB03 /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D45E4F89AA5D424EA95ED2EC /* SupabaseClient.swift */; };
 		A38CDAC219444231B01661C6 /* SupabaseClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751B10DB7CA34BF0B801EA64 /* SupabaseClientTests.swift */; };
+		41ECA2B327C142F1B33A2F06 /* LocalSyncStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01C66BC9FF02434ABD5CE17A /* LocalSyncStore.swift */; };
+		ECEBA9CF2EFB476EBFE2D867 /* LocalSyncStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09827440EAF14C988F3703EB /* LocalSyncStoreTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -285,6 +287,8 @@
 		A8BBA59C49944BBF9F5A36CC /* SyncFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncFoundationTests.swift; sourceTree = "<group>"; };
 		D45E4F89AA5D424EA95ED2EC /* SupabaseClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClient.swift; sourceTree = "<group>"; };
 		751B10DB7CA34BF0B801EA64 /* SupabaseClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseClientTests.swift; sourceTree = "<group>"; };
+		01C66BC9FF02434ABD5CE17A /* LocalSyncStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSyncStore.swift; sourceTree = "<group>"; };
+		09827440EAF14C988F3703EB /* LocalSyncStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSyncStoreTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -547,6 +551,7 @@
 			children = (
 				A20000000000000000000049 /* SwiftDataRepositoryTests.swift */,
 				A8BBA59C49944BBF9F5A36CC /* SyncFoundationTests.swift */,
+				09827440EAF14C988F3703EB /* LocalSyncStoreTests.swift */,
 				751B10DB7CA34BF0B801EA64 /* SupabaseClientTests.swift */,
 			);
 			path = Data;
@@ -676,6 +681,7 @@
 			isa = PBXGroup;
 			children = (
 				0FF363A7FA0C48D5807942D0 /* SyncConfiguration.swift */,
+				01C66BC9FF02434ABD5CE17A /* LocalSyncStore.swift */,
 				D45E4F89AA5D424EA95ED2EC /* SupabaseClient.swift */,
 				FABA1EDFA5A1414FBCDE8BA3 /* SyncWireModels.swift */,
 				3E7812B5B5AC4F888EA0D085 /* LocalIdentity.swift */,
@@ -884,6 +890,7 @@
 				A10000000000000000000041 /* BarabariModelContainer.swift in Sources */,
 				A10000000000000000000042 /* LocalGroupRepository.swift in Sources */,
 				EFB2A19FD1454C3E9D1FD016 /* SyncConfiguration.swift in Sources */,
+				41ECA2B327C142F1B33A2F06 /* LocalSyncStore.swift in Sources */,
 				2924CD268B864CC7833FEB03 /* SupabaseClient.swift in Sources */,
 				F43CE98E1362455CBC3EA6CD /* SyncWireModels.swift in Sources */,
 				6106AAC7A2644E2E8E55E7B2 /* LocalIdentity.swift in Sources */,
@@ -941,6 +948,7 @@
 				A10000000000000000000023 /* LedgerUseCaseTests.swift in Sources */,
 				A10000000000000000000046 /* SwiftDataRepositoryTests.swift in Sources */,
 				1B4CF6167F2B4E0DA70628C7 /* SyncFoundationTests.swift in Sources */,
+				ECEBA9CF2EFB476EBFE2D867 /* LocalSyncStoreTests.swift in Sources */,
 				A38CDAC219444231B01661C6 /* SupabaseClientTests.swift in Sources */,
 				A10000000000000000000062 /* AddExpenseViewModelTests.swift in Sources */,
 				A10000000000000000000070 /* BalanceSummaryPresentationTests.swift in Sources */,
