@@ -54,7 +54,7 @@ struct AppEnvironment {
             }
             self.isOffline = isOffline
             self.isDemo = seedDemoData
-            self.syncConfiguration = inMemory ? nil : syncConfiguration
+            self.syncConfiguration = syncConfiguration
         } catch {
             fatalError("Unable to create Barabari's local ledger store: \(error.localizedDescription)")
         }
