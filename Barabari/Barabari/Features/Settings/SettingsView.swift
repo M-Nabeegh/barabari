@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var isEditingName = false
     @ObservedObject private var metadata = LedgerMetadata.shared
     @ObservedObject private var lock = AppLock.shared
+    @Environment(\.syncEngine) private var syncEngine
     @AppStorage("barabari.hasOnboarded") private var hasOnboarded = true
 
     init(environment: AppEnvironment, isDemo: Bool) {
@@ -20,6 +21,16 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: BarabariSpacing.section) {
                 profileCard
                     .staggeredAppear(0)
+
+                if let syncEngine {
+                    VStack(alignment: .leading, spacing: BarabariSpacing.compact) {
+                        sectionLabel("Cloud")
+                        BarabariCard(padding: 0) {
+                            CloudSyncRow(engine: syncEngine)
+                        }
+                    }
+                    .staggeredAppear(1)
+                }
 
                 VStack(alignment: .leading, spacing: BarabariSpacing.compact) {
                     sectionLabel("Appearance")
@@ -151,7 +162,9 @@ struct SettingsView: View {
                     Image(systemName: "equal.circle.fill")
                         .font(.title2)
                         .foregroundStyle(BarabariColors.accent.gradient)
-                    Text(isDemo ? "Local demo: data stays on this iPhone." : "Local ledger: data stays on this iPhone.")
+                    Text(isDemo ? "Local demo: data stays on this iPhone."
+                         : syncEngine == nil ? "Local ledger: data stays on this iPhone."
+                         : "Shared through Barabari Cloud. Barabari never moves money.")
                         .font(BarabariTypography.metadata)
                         .foregroundStyle(BarabariColors.textSecondary)
                         .accessibilityIdentifier("local-demo-status")

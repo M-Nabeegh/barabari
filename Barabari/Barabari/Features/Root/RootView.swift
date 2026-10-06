@@ -8,7 +8,10 @@ struct RootView: View {
     @StateObject private var homeViewModel: HomeViewModel
     @StateObject private var groupsViewModel: GroupsViewModel
     @StateObject private var addExpenseViewModel: AddExpenseViewModel
+    @StateObject private var sync: SyncEngine
+    @ObservedObject private var metadata = LedgerMetadata.shared
     @AppStorage("barabari.appearance") private var appearanceRawValue = "dark"
+    @Environment(\.scenePhase) private var scenePhase
     @Namespace private var groupTransition
 
     init(environment: AppEnvironment) {
@@ -18,6 +21,7 @@ struct RootView: View {
         _homeViewModel = StateObject(wrappedValue: HomeViewModel(environment: environment))
         _groupsViewModel = StateObject(wrappedValue: GroupsViewModel(environment: environment))
         _addExpenseViewModel = StateObject(wrappedValue: AddExpenseViewModel(environment: environment))
+        _sync = StateObject(wrappedValue: SyncEngine(environment: environment))
     }
 
     var body: some View {
@@ -93,12 +97,22 @@ struct RootView: View {
         .tabBarMinimizeBehavior(.onScrollDown)
         .tint(BarabariColors.accent)
         .sensoryFeedback(.selection, trigger: router.selectedTab)
+        .onChange(of: session.localWrites) { _, _ in sync.localDataChanged() }
+        .onChange(of: metadata.ownerName) { _, _ in sync.localDataChanged() }
+        .onChange(of: sync.remoteChangeCount) { _, _ in session.markRemoteChanged() }
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            switch phase {
+            case .active: sync.appBecameActive()
+            case .background: sync.appWentToBackground()
+            default: break
+            }
+        }
         .sheet(item: $router.invitePresentation) { presentation in
             switch presentation {
             case let .invite(groupID):
                 GroupInviteView(environment: environment, groupID: groupID)
             case let .join(url):
-                JoinGroupView(environment: environment, initialURL: url) { group in
+                JoinGroupView(environment: environment, sync: sync.isEnabled ? sync : nil, initialURL: url) { group in
                     session.markChanged()
                     router.dismissInvitePresentation()
                     router.showGroup(group)
@@ -113,6 +127,8 @@ struct RootView: View {
             }
         }
         .preferredColorScheme(BarabariAppearance(rawValue: appearanceRawValue)?.colorScheme)
+        // Outermost, so sheets (invites, joins) see the sync engine too.
+        .environment(\.syncEngine, sync.isEnabled ? sync : nil)
     }
 
     private var tabSelection: Binding<AppTab> {

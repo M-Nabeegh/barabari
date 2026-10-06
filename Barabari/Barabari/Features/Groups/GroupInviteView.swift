@@ -6,6 +6,7 @@ struct GroupInviteView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var viewModel: GroupInviteViewModel
     @State private var didCopy = false
+    @Environment(\.syncEngine) private var syncEngine
 
     init(environment: AppEnvironment, groupID: UUID) {
         _viewModel = StateObject(wrappedValue: GroupInviteViewModel(environment: environment, groupID: groupID))
@@ -49,7 +50,9 @@ struct GroupInviteView: View {
             Text("Invite to \(payload.groupName)")
                 .font(.title2.weight(.bold))
                 .multilineTextAlignment(.center)
-            Text("Share this link or let someone scan the code to join this local ledger.")
+            Text(syncEngine == nil
+                 ? "Share this link or let someone scan the code to join this local ledger."
+                 : "Share this link or let someone scan the code to join from their own phone.")
                 .font(BarabariTypography.metadata)
                 .foregroundStyle(BarabariColors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -114,7 +117,12 @@ struct GroupInviteView: View {
         }
         .staggeredAppear(1)
 
-        Label("Local demo: this invite works when the group is already in Barabari on this iPhone. Cloud sync comes later.", systemImage: "iphone")
+        Label(
+            syncEngine == nil
+                ? "Local demo: this invite works when the group is already in Barabari on this iPhone."
+                : "Anyone with this link can join from their own phone and see the same balances.",
+            systemImage: syncEngine == nil ? "iphone" : "icloud.fill"
+        )
             .font(BarabariTypography.metadata)
             .foregroundStyle(BarabariColors.textSecondary)
             .staggeredAppear(2)

@@ -10,8 +10,8 @@ struct JoinGroupView: View {
 
     let joined: (Group) -> Void
 
-    init(environment: AppEnvironment, initialURL: URL? = nil, joined: @escaping (Group) -> Void) {
-        _viewModel = StateObject(wrappedValue: JoinGroupViewModel(environment: environment, initialURL: initialURL))
+    init(environment: AppEnvironment, sync: SyncEngine? = nil, initialURL: URL? = nil, joined: @escaping (Group) -> Void) {
+        _viewModel = StateObject(wrappedValue: JoinGroupViewModel(environment: environment, sync: sync, initialURL: initialURL))
         self.joined = joined
     }
 
@@ -75,7 +75,7 @@ struct JoinGroupView: View {
                 .symbolEffect(.breathe, options: .repeat(2))
             Text("Join with an invite")
                 .font(.title2.weight(.bold))
-            Text("Paste a Barabari link or scan a QR code. We will check whether the group is available in this local demo.")
+            Text("Paste a Barabari link or scan a QR code to join a group.")
                 .font(BarabariTypography.metadata)
                 .foregroundStyle(BarabariColors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -147,6 +147,8 @@ struct JoinGroupView: View {
             EmptyView()
         case let .preview(payload, localGroup):
             preview(payload: payload, localGroup: localGroup)
+        case let .cloudPreview(_, cloud):
+            cloudPreview(cloud)
         case .joining:
             ProgressView("Joining group")
                 .frame(maxWidth: .infinity, minHeight: 120)
@@ -195,6 +197,104 @@ struct JoinGroupView: View {
                 .accessibilityIdentifier("join-group-confirm")
             }
         }
+    }
+
+    private func cloudPreview(_ cloud: CloudGroupPreview) -> some View {
+        VStack(alignment: .leading, spacing: BarabariSpacing.section) {
+            BarabariCard {
+                HStack(spacing: 14) {
+                    GroupAvatar(name: cloud.name, seed: cloud.groupID, size: 52)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(cloud.name)
+                            .font(BarabariTypography.sectionTitle)
+                        Label("\(cloud.memberCount) \(cloud.memberCount == 1 ? "person" : "people") · Barabari Cloud", systemImage: "icloud.fill")
+                            .font(BarabariTypography.metadata)
+                            .foregroundStyle(BarabariColors.accent)
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+
+            if !cloud.openSpots.isEmpty {
+                VStack(alignment: .leading, spacing: BarabariSpacing.row) {
+                    SectionHeader("Are you one of these?")
+                    Text("Someone added these people by name. Pick yours to take over your share of past expenses.")
+                        .font(BarabariTypography.metadata)
+                        .foregroundStyle(BarabariColors.textSecondary)
+                        .padding(.horizontal, 4)
+                    ScrollView(.horizontal) {
+                        HStack(spacing: 14) {
+                            spotChip(name: "I’m new", seed: nil, systemImage: "person.badge.plus")
+                            ForEach(cloud.openSpots) { spot in
+                                spotChip(name: spot.displayName, seed: spot.userID, systemImage: nil)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .scrollIndicators(.hidden)
+                    .scrollClipDisabled()
+                }
+            }
+
+            Label("Everyone in the group sees the same expenses and balances. Barabari never moves money.", systemImage: "lock.shield")
+                .font(BarabariTypography.metadata)
+                .foregroundStyle(BarabariColors.textSecondary)
+
+            PrimaryActionButton(viewModel.claimedSpot == nil ? "Join group" : "Join as \(cloud.openSpots.first { $0.userID == viewModel.claimedSpot }?.displayName ?? "them")") {
+                isLinkFieldFocused = false
+                Task {
+                    if let group = await viewModel.joinCloud() {
+                        BarabariInteraction.trigger(.success)
+                        joined(group)
+                    } else {
+                        BarabariInteraction.trigger(.error)
+                    }
+                }
+            }
+            .accessibilityIdentifier("join-group-confirm")
+        }
+    }
+
+    private func spotChip(name: String, seed: UUID?, systemImage: String?) -> some View {
+        let isSelected = viewModel.claimedSpot == seed
+        return Button {
+            BarabariInteraction.trigger(.selection)
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) { viewModel.claimedSpot = seed }
+        } label: {
+            VStack(spacing: 8) {
+                SwiftUI.Group {
+                    if let systemImage {
+                        Image(systemName: systemImage)
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(BarabariColors.accent)
+                            .frame(width: 56, height: 56)
+                            .background(BarabariColors.accent.opacity(0.14), in: .circle)
+                    } else if let seed {
+                        MemberAvatar(name: name, seed: seed, size: 56)
+                    }
+                }
+                .overlay(alignment: .bottomTrailing) {
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, BarabariColors.accent)
+                            .background(BarabariColors.background, in: .circle)
+                            .offset(x: 2, y: 2)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .scaleEffect(isSelected ? 1.06 : 1)
+                Text(name)
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(isSelected ? BarabariColors.textPrimary : BarabariColors.textSecondary)
+                    .lineLimit(1)
+            }
+            .frame(width: 76)
+        }
+        .buttonStyle(.pressable)
+        .accessibilityLabel(name)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     @ViewBuilder

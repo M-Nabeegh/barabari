@@ -7,6 +7,7 @@ struct GroupDetailView: View {
     private let onInvite: () -> Void
     private let onAddExpense: () -> Void
     @StateObject private var viewModel: GroupDetailViewModel
+    @Environment(\.syncEngine) private var syncEngine
     @State private var selectedTransfer: BalanceTransfer?
     @State private var selectedGroupID: UUID?
     @State private var isPresentingSettlement = false
@@ -76,7 +77,10 @@ struct GroupDetailView: View {
             }
         }
         .task(id: revision) { await viewModel.refresh() }
-        .refreshable { await viewModel.refresh() }
+        .refreshable {
+            await syncEngine?.syncNow()
+            await viewModel.refresh()
+        }
         .onChange(of: isPresentingSettlement) { _, isPresenting in
             guard !isPresenting else { return }
             Task { await viewModel.refresh() }

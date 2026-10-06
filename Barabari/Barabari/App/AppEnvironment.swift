@@ -16,8 +16,10 @@ struct AppEnvironment {
     let currentUserID: UUID
     let isOffline: Bool
     let isDemo: Bool
+    /// Present only for the on-device ledger of a build configured for Supabase.
+    let syncConfiguration: SyncConfiguration?
 
-    static let live = AppEnvironment(inMemory: false)
+    static let live = AppEnvironment(inMemory: false, syncConfiguration: SyncConfiguration.fromBundle())
     static let demo = AppEnvironment(inMemory: true, seedDemoData: true)
 
     init(
@@ -25,8 +27,9 @@ struct AppEnvironment {
         seedDemoData: Bool = false,
         seedDemoSecondMember: Bool = false,
         seedDemoDebt: Bool = false,
-        currentUserID: UUID = barabariDefaultUserID,
-        isOffline: Bool = false
+        currentUserID: UUID? = nil,
+        isOffline: Bool = false,
+        syncConfiguration: SyncConfiguration? = nil
     ) {
         do {
             let container = try BarabariModelContainer.make(inMemory: inMemory)
@@ -42,9 +45,16 @@ struct AppEnvironment {
             expenseRepository = LocalExpenseRepository(container: container)
             settlementRepository = LocalSettlementRepository(container: container)
             balanceRepository = LocalBalanceRepository(container: container)
-            self.currentUserID = currentUserID
+            if let currentUserID {
+                self.currentUserID = currentUserID
+            } else if inMemory {
+                self.currentUserID = barabariDefaultUserID
+            } else {
+                self.currentUserID = try LocalIdentity.resolve(container: container)
+            }
             self.isOffline = isOffline
             self.isDemo = seedDemoData
+            self.syncConfiguration = syncConfiguration
         } catch {
             fatalError("Unable to create Barabari's local ledger store: \(error.localizedDescription)")
         }

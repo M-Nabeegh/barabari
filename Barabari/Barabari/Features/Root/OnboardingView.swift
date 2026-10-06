@@ -177,7 +177,7 @@ struct OnboardingView: View {
                     .font(.system(size: 30, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Friends see this on reminders you share. It stays on this iPhone.")
+                Text("Friends in your groups see this name on shared expenses and reminders.")
                     .font(.body)
                     .foregroundStyle(.white.opacity(0.75))
                     .multilineTextAlignment(.center)

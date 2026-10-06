@@ -11,6 +11,7 @@ struct HomeView: View {
     let joinGroup: () -> Void
     let selectGroup: (Group) -> Void
     @ObservedObject private var metadata = LedgerMetadata.shared
+    @Environment(\.syncEngine) private var syncEngine
     @State private var waved = false
 
     var body: some View {
@@ -49,6 +50,7 @@ struct HomeView: View {
             await groupsViewModel.refresh()
         }
         .refreshable {
+            await syncEngine?.syncNow()
             await viewModel.refresh()
             await groupsViewModel.refresh()
         }
@@ -329,6 +331,7 @@ private struct SpendingCard: View {
 
 private struct BalanceHeroCard: View {
     let snapshot: HomeSnapshot
+    @Environment(\.syncEngine) private var syncEngine
 
     private var net: Int64 { snapshot.amountOwed.minorUnits - snapshot.amountOwing.minorUnits }
 
@@ -349,12 +352,16 @@ private struct BalanceHeroCard: View {
                     .tracking(1.2)
                     .foregroundStyle(.white.opacity(0.72))
                 Spacer()
-                Label("On this iPhone", systemImage: "lock.fill")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.9))
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .glassEffect(.clear, in: .capsule)
+                if let syncEngine {
+                    SyncStatusPill(engine: syncEngine)
+                } else {
+                    Label("On this iPhone", systemImage: "lock.fill")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.9))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .glassEffect(.clear, in: .capsule)
+                }
             }
 
             HeroAmount(minorUnits: net, size: 48)

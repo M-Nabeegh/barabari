@@ -5,6 +5,7 @@ struct ActivityView: View {
     private let currentUserID: UUID
 
     @StateObject private var viewModel: ActivityViewModel
+    @Environment(\.syncEngine) private var syncEngine
     @ObservedObject private var metadata = LedgerMetadata.shared
 
     init(environment: AppEnvironment, revision: Int) {
@@ -73,7 +74,10 @@ struct ActivityView: View {
         .navigationTitle("Activity")
         .navigationBarTitleDisplayMode(.large)
         .task(id: revision) { await viewModel.load() }
-        .refreshable { await viewModel.load() }
+        .refreshable {
+            await syncEngine?.syncNow()
+            await viewModel.load()
+        }
     }
 
     private struct DaySection {
@@ -177,6 +181,10 @@ struct ActivityView: View {
     private func title(for row: ActivityRow) -> String {
         if row.event.kind == .expenseCreated, let expense = row.expense {
             return expense.title
+        }
+        if row.event.kind == .memberJoined, row.event.actorUserID != currentUserID,
+           let name = metadata.names[row.event.actorUserID] {
+            return "\(name) joined"
         }
         return row.event.kind.title
     }
