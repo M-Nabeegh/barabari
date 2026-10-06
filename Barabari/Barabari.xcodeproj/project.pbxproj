@@ -107,6 +107,10 @@
 		974315865CD546BF9B1A26BF /* BarabariWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9BA076AEA7EA43618B320B55 /* BarabariWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C7C3E54927B04552A597B987 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99B4034649F645AEB17518F1 /* WidgetSnapshot.swift */; };
 		E0946016F7184467B8EAF940 /* PolishFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A8A980B66140EB90D4BC34 /* PolishFeatureTests.swift */; };
+		EFB2A19FD1454C3E9D1FD016 /* SyncConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FF363A7FA0C48D5807942D0 /* SyncConfiguration.swift */; };
+		6106AAC7A2644E2E8E55E7B2 /* LocalIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7812B5B5AC4F888EA0D085 /* LocalIdentity.swift */; };
+		F43CE98E1362455CBC3EA6CD /* SyncWireModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FABA1EDFA5A1414FBCDE8BA3 /* SyncWireModels.swift */; };
+		1B4CF6167F2B4E0DA70628C7 /* SyncFoundationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8BBA59C49944BBF9F5A36CC /* SyncFoundationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -273,6 +277,10 @@
 		99B4034649F645AEB17518F1 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
 		9BA076AEA7EA43618B320B55 /* BarabariWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BarabariWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		00A8A980B66140EB90D4BC34 /* PolishFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolishFeatureTests.swift; sourceTree = "<group>"; };
+		0FF363A7FA0C48D5807942D0 /* SyncConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncConfiguration.swift; sourceTree = "<group>"; };
+		3E7812B5B5AC4F888EA0D085 /* LocalIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalIdentity.swift; sourceTree = "<group>"; };
+		FABA1EDFA5A1414FBCDE8BA3 /* SyncWireModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncWireModels.swift; sourceTree = "<group>"; };
+		A8BBA59C49944BBF9F5A36CC /* SyncFoundationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncFoundationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -502,6 +510,7 @@
 		A40000000000000000000016 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				D609840EB63A4625AD804C1C /* Sync */,
 				A40000000000000000000017 /* SwiftData */,
 				A40000000000000000000018 /* LocalRepositories */,
 			);
@@ -533,6 +542,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000049 /* SwiftDataRepositoryTests.swift */,
+				A8BBA59C49944BBF9F5A36CC /* SyncFoundationTests.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -655,6 +665,16 @@
 				A20000000000000000000075 /* LedgerSessionTests.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		D609840EB63A4625AD804C1C /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				0FF363A7FA0C48D5807942D0 /* SyncConfiguration.swift */,
+				FABA1EDFA5A1414FBCDE8BA3 /* SyncWireModels.swift */,
+				3E7812B5B5AC4F888EA0D085 /* LocalIdentity.swift */,
+			);
+			path = Sync;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -857,6 +877,9 @@
 				A10000000000000000000040 /* SwiftDataModels.swift in Sources */,
 				A10000000000000000000041 /* BarabariModelContainer.swift in Sources */,
 				A10000000000000000000042 /* LocalGroupRepository.swift in Sources */,
+				EFB2A19FD1454C3E9D1FD016 /* SyncConfiguration.swift in Sources */,
+				F43CE98E1362455CBC3EA6CD /* SyncWireModels.swift in Sources */,
+				6106AAC7A2644E2E8E55E7B2 /* LocalIdentity.swift in Sources */,
 				A10000000000000000000043 /* LocalExpenseRepository.swift in Sources */,
 				A10000000000000000000044 /* LocalSettlementRepository.swift in Sources */,
 				A10000000000000000000045 /* LocalBalanceRepository.swift in Sources */,
@@ -910,6 +933,7 @@
 				E0946016F7184467B8EAF940 /* PolishFeatureTests.swift in Sources */,
 				A10000000000000000000023 /* LedgerUseCaseTests.swift in Sources */,
 				A10000000000000000000046 /* SwiftDataRepositoryTests.swift in Sources */,
+				1B4CF6167F2B4E0DA70628C7 /* SyncFoundationTests.swift in Sources */,
 				A10000000000000000000062 /* AddExpenseViewModelTests.swift in Sources */,
 				A10000000000000000000070 /* BalanceSummaryPresentationTests.swift in Sources */,
 				A10000000000000000000071 /* SettlementViewModelTests.swift in Sources */,
