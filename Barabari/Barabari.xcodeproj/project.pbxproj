@@ -121,6 +121,10 @@
 		9F6B18C3EA9848EEA3A656F5 /* PersonalFinance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C1330098044B3597D937CE /* PersonalFinance.swift */; };
 		AAE56C5073F44D0A81C00B43 /* PersonalFinanceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6773EEC21CFB466ABCF4A5F5 /* PersonalFinanceStore.swift */; };
 		63711334B32B4B6993A6BDA4 /* PersonalFinanceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A477718D9ED4A049AF3564A /* PersonalFinanceStoreTests.swift */; };
+		EACCB8E0CC7F4BCDBE0E1017 /* WalletViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D805B8E8AA68426CB07CD837 /* WalletViews.swift */; };
+		47225FA54EDF49E2BC4FD47A /* MoneyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28320E8459944A5396CF67CE /* MoneyView.swift */; };
+		2219C5365F034D6F96D2CA35 /* MoneySheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10D70F3CF5BD46C3A6938471 /* MoneySheets.swift */; };
+		454F7C4F6E744157B1D360E9 /* MoneyFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003993B5B9BB4E6485EFC8F8 /* MoneyFlowUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -301,6 +305,10 @@
 		B1C1330098044B3597D937CE /* PersonalFinance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalFinance.swift; sourceTree = "<group>"; };
 		6773EEC21CFB466ABCF4A5F5 /* PersonalFinanceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalFinanceStore.swift; sourceTree = "<group>"; };
 		8A477718D9ED4A049AF3564A /* PersonalFinanceStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalFinanceStoreTests.swift; sourceTree = "<group>"; };
+		D805B8E8AA68426CB07CD837 /* WalletViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViews.swift; sourceTree = "<group>"; };
+		28320E8459944A5396CF67CE /* MoneyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyView.swift; sourceTree = "<group>"; };
+		10D70F3CF5BD46C3A6938471 /* MoneySheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneySheets.swift; sourceTree = "<group>"; };
+		003993B5B9BB4E6485EFC8F8 /* MoneyFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyFlowUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -416,6 +424,7 @@
 				A20000000000000000000050 /* NavigationUITests.swift */,
 				A20000000000000000000059 /* ExpenseFlowUITests.swift */,
 				A20000000000000000000066 /* SettlementFlowUITests.swift */,
+				003993B5B9BB4E6485EFC8F8 /* MoneyFlowUITests.swift */,
 				A20000000000000000000093 /* InviteFlowUITests.swift */,
 			);
 			path = BarabariUITests;
@@ -576,6 +585,7 @@
 		A40000000000000000000020 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				95CAD1FB81BE4F7083AB6BCB /* Money */,
 				A40000000000000000000021 /* Root */,
 				A40000000000000000000022 /* Home */,
 				A40000000000000000000023 /* Groups */,
@@ -713,6 +723,16 @@
 				6773EEC21CFB466ABCF4A5F5 /* PersonalFinanceStore.swift */,
 			);
 			path = Personal;
+			sourceTree = "<group>";
+		};
+		95CAD1FB81BE4F7083AB6BCB /* Money */ = {
+			isa = PBXGroup;
+			children = (
+				D805B8E8AA68426CB07CD837 /* WalletViews.swift */,
+				10D70F3CF5BD46C3A6938471 /* MoneySheets.swift */,
+				28320E8459944A5396CF67CE /* MoneyView.swift */,
+			);
+			path = Money;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -930,6 +950,9 @@
 				A10000000000000000000049 /* RootView.swift in Sources */,
 				B19D3707439A4107ADD7405B /* OnboardingView.swift in Sources */,
 				A10000000000000000000050 /* HomeView.swift in Sources */,
+				EACCB8E0CC7F4BCDBE0E1017 /* WalletViews.swift in Sources */,
+				2219C5365F034D6F96D2CA35 /* MoneySheets.swift in Sources */,
+				47225FA54EDF49E2BC4FD47A /* MoneyView.swift in Sources */,
 				A10000000000000000000051 /* HomeViewModel.swift in Sources */,
 				A10000000000000000000052 /* GroupsView.swift in Sources */,
 				A10000000000000000000053 /* GroupsViewModel.swift in Sources */,
@@ -1001,6 +1024,7 @@
 				A10000000000000000000047 /* NavigationUITests.swift in Sources */,
 				A10000000000000000000056 /* ExpenseFlowUITests.swift in Sources */,
 				A10000000000000000000063 /* SettlementFlowUITests.swift in Sources */,
+				454F7C4F6E744157B1D360E9 /* MoneyFlowUITests.swift in Sources */,
 				A10000000000000000000090 /* InviteFlowUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

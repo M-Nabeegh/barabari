@@ -39,9 +39,15 @@ struct AddExpenseView: View {
                         .barabariScreen()
                 }
                 .id(expense.id)
+            } else if let personal = viewModel.savedPersonal {
+                ScrollView {
+                    personalConfirmation(personal)
+                        .barabariScreen()
+                }
+                .id(personal.id)
             } else if viewModel.isLoading {
                 BarabariLoadingState(title: "Loading your groups")
-            } else if viewModel.groups.isEmpty {
+            } else if viewModel.groups.isEmpty && !viewModel.isPersonal {
                 ScrollView {
                     BarabariEmptyState(
                         systemImage: "person.2.fill",
@@ -53,6 +59,9 @@ struct AddExpenseView: View {
             } else if step == .amount {
                 amountStep
                     .transition(.asymmetric(insertion: .move(edge: .leading).combined(with: .opacity), removal: .opacity))
+            } else if viewModel.isPersonal {
+                personalDetailsStep
+                    .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
             } else {
                 detailsStep
                     .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
@@ -60,10 +69,10 @@ struct AddExpenseView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(BarabariColors.background)
-        .navigationTitle(step == .amount ? "Add expense" : "New expense")
+        .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if step == .details && viewModel.savedExpense == nil {
+            if step == .details && viewModel.savedExpense == nil && viewModel.savedPersonal == nil {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Amount", systemImage: "chevron.backward") {
                         focusedField = nil
@@ -80,6 +89,15 @@ struct AddExpenseView: View {
         .onChange(of: viewModel.savedExpense?.id) { _, id in
             if id == nil { go(to: .amount) }
         }
+        .onChange(of: viewModel.savedPersonal?.id) { _, id in
+            if id == nil { go(to: .amount) }
+        }
+    }
+
+    private var navigationTitle: LocalizedStringKey {
+        if step == .amount { return "Add expense" }
+        if viewModel.isPersonal { return viewModel.personalKind == .income ? "New income" : "Just me" }
+        return "New expense"
     }
 
     private func go(to newStep: Step) {
@@ -145,13 +163,29 @@ struct AddExpenseView: View {
 
     private var groupPill: some View {
         Menu {
-            ForEach(viewModel.groups) { group in
-                Button(group.name) { viewModel.selectGroup(group.id) }
+            Button {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { viewModel.choosePersonal() }
+            } label: {
+                Label("Just me", systemImage: "person.crop.circle")
+            }
+            if !viewModel.groups.isEmpty {
+                Section("Split with a group") {
+                    ForEach(viewModel.groups) { group in
+                        Button(group.name) {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { viewModel.selectGroup(group.id) }
+                        }
+                    }
+                }
             }
         } label: {
             HStack(spacing: 8) {
-                GroupAvatar(name: selectedGroupName, seed: viewModel.selectedGroupID ?? UUID(), size: 24)
-                Text(selectedGroupName)
+                if viewModel.isPersonal {
+                    MemberAvatar(name: "You", seed: AppEnvironment.demoUserID, size: 24)
+                } else {
+                    GroupAvatar(name: selectedGroupName, seed: viewModel.selectedGroupID ?? UUID(), size: 24)
+                }
+                Text(viewModel.isPersonal ? "Just me" : selectedGroupName)
+                    .contentTransition(.interpolate)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(BarabariColors.textPrimary)
                 Image(systemName: "chevron.down")
@@ -163,7 +197,185 @@ struct AddExpenseView: View {
             .padding(.vertical, 6)
             .glassEffect(.regular.interactive(), in: .capsule)
         }
-        .accessibilityLabel("Group, \(selectedGroupName)")
+        .accessibilityLabel(viewModel.isPersonal ? "Just me" : "Group, \(selectedGroupName)")
+        .accessibilityIdentifier("expense-target")
+    }
+
+    // MARK: Step 2 — personal details
+
+    private var personalDetailsStep: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: BarabariSpacing.section) {
+                Button {
+                    go(to: .amount)
+                } label: {
+                    VStack(spacing: 4) {
+                        HeroAmount(
+                            minorUnits: Int64(((Double(viewModel.amountText) ?? 0) * 100).rounded()),
+                            size: 44,
+                            color: viewModel.personalKind == .income ? BarabariColors.success : BarabariColors.textPrimary
+                        )
+                        Label("Tap to edit", systemImage: "pencil")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(BarabariColors.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.pressable)
+                .matchedGeometryEffect(id: "amount", in: amountMorph)
+                .accessibilityLabel("Edit amount")
+
+                kindToggle
+                    .staggeredAppear(0)
+
+                TextField(viewModel.personalKind == .income ? "Where did it come from?" : "What was it for?", text: $viewModel.title)
+                    .textInputAutocapitalization(.sentences)
+                    .submitLabel(.done)
+                    .focused($focusedField, equals: .title)
+                    .font(.body.weight(.medium))
+                    .multilineTextAlignment(.center)
+                    .frame(minHeight: 50)
+                    .padding(.horizontal, 18)
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .accessibilityIdentifier("expense-title")
+                    .staggeredAppear(1)
+
+                SwiftUI.Group {
+                    if viewModel.personalKind == .expense {
+                        categoryPicker
+                    } else {
+                        incomePicker
+                    }
+                }
+                .staggeredAppear(2)
+
+                walletPicker
+                    .staggeredAppear(3)
+
+                BarabariCard(padding: 0) {
+                    DatePicker(selection: $viewModel.personalDate, in: ...Date.now.addingTimeInterval(86_400 * 365), displayedComponents: .date) {
+                        Label("Date", systemImage: "calendar")
+                            .font(BarabariTypography.body)
+                    }
+                    .tint(BarabariColors.accent)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 56)
+                }
+                .staggeredAppear(4)
+
+                if let validationMessage = viewModel.validationMessage {
+                    validationLabel(validationMessage)
+                }
+
+                Button {
+                    focusedField = nil
+                    Task {
+                        let didSave = await viewModel.savePersonal()
+                        BarabariInteraction.trigger(didSave ? .success : .error)
+                        if didSave { session.markChanged() }
+                    }
+                } label: {
+                    Text(viewModel.personalKind == .income ? "Save income" : "Save expense")
+                        .font(.system(.body, design: .rounded, weight: .semibold))
+                        .frame(maxWidth: .infinity, minHeight: 54)
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(BarabariPrimaryButtonStyle())
+                .disabled(viewModel.isSaving)
+                .accessibilityIdentifier("save-personal")
+            }
+            .padding(.top, 8)
+            .barabariScreen()
+        }
+        .scrollIndicators(.hidden)
+        .scrollDismissesKeyboard(.interactively)
+    }
+
+    private var kindToggle: some View {
+        HStack(spacing: 4) {
+            ForEach(TransactionKind.allCases) { kind in
+                let isSelected = viewModel.personalKind == kind
+                Button {
+                    BarabariInteraction.trigger(.selection)
+                    withAnimation(.spring(response: 0.38, dampingFraction: 0.78)) { viewModel.personalKind = kind }
+                } label: {
+                    Label(LocalizedStringKey(kind.title), systemImage: kind == .expense ? "arrow.up.right" : "arrow.down.left")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(isSelected ? BarabariColors.onAccent : BarabariColors.textPrimary)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background {
+                            if isSelected {
+                                Capsule()
+                                    .fill(kind == .income ? BarabariColors.success.gradient : BarabariColors.accent.gradient)
+                                    .matchedGeometryEffect(id: "kind-segment", in: amountMorph)
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+        .padding(4)
+        .glassEffect(.regular, in: .capsule)
+    }
+
+    private var incomePicker: some View {
+        VStack(alignment: .leading, spacing: BarabariSpacing.row) {
+            SectionHeader("Category")
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
+                    ForEach(IncomeCategory.allCases) { category in
+                        let isSelected = viewModel.incomeCategory == category
+                        let color = Color(uiColor: UIColor(hex: category.hex))
+                        Button {
+                            BarabariInteraction.trigger(.selection)
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { viewModel.chooseIncomeCategory(category) }
+                        } label: {
+                            Label(LocalizedStringKey(category.title), systemImage: category.systemImage)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(isSelected ? .white : BarabariColors.textPrimary)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background {
+                                    Capsule().fill(isSelected ? AnyShapeStyle(color.gradient) : AnyShapeStyle(BarabariColors.surface))
+                                }
+                                .overlay { Capsule().strokeBorder(isSelected ? .clear : BarabariColors.hairline, lineWidth: 1) }
+                        }
+                        .buttonStyle(.pressable)
+                        .accessibilityAddTraits(isSelected ? .isSelected : [])
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .scrollIndicators(.hidden)
+            .scrollClipDisabled()
+        }
+    }
+
+    private var walletPicker: some View {
+        VStack(alignment: .leading, spacing: BarabariSpacing.row) {
+            SectionHeader(viewModel.personalKind == .income ? "Into" : "Paid from")
+            ScrollView(.horizontal) {
+                HStack(spacing: 10) {
+                    ForEach(viewModel.wallets) { wallet in
+                        let isSelected = viewModel.personalWalletID == wallet.id
+                        Button {
+                            BarabariInteraction.trigger(.selection)
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { viewModel.personalWalletID = wallet.id }
+                        } label: {
+                            WalletChip(wallet: wallet, balanceMinor: viewModel.walletBalance(wallet.id), isSelected: isSelected)
+                        }
+                        .buttonStyle(.pressable)
+                        .accessibilityLabel(wallet.name)
+                        .accessibilityAddTraits(isSelected ? .isSelected : [])
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            .scrollIndicators(.hidden)
+            .scrollClipDisabled()
+        }
     }
 
     // MARK: Step 2 — details
@@ -469,8 +681,31 @@ struct AddExpenseView: View {
             .transition(.move(edge: .top).combined(with: .opacity))
     }
 
+    private func personalConfirmation(_ transaction: MoneyTransaction) -> some View {
+        let wallet = viewModel.personalFinanceWalletName(transaction.walletID)
+        return ExpenseSavedView(
+            headline: transaction.kind == .income ? "Income added" : "Expense saved",
+            message: transaction.kind == .income
+                ? "\(transaction.title) went into \(wallet)."
+                : "\(transaction.title) was paid from \(wallet).",
+            amountMinor: transaction.amountMinor,
+            budgetAlert: viewModel.budgetAlert,
+            actionTitle: transaction.kind == .income ? "Add another" : "Add another expense"
+        ) {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                viewModel.addAnotherExpense()
+            }
+        }
+    }
+
     private func confirmation(_ expense: Expense) -> some View {
-        ExpenseSavedView(expense: expense) {
+        ExpenseSavedView(
+            headline: "Expense saved locally",
+            message: "\(expense.title) is now part of this group’s ledger on this iPhone.",
+            amountMinor: expense.total.minorUnits,
+            budgetAlert: viewModel.budgetAlert,
+            actionTitle: "Add another expense"
+        ) {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 viewModel.addAnotherExpense()
             }
@@ -479,7 +714,11 @@ struct AddExpenseView: View {
 }
 
 private struct ExpenseSavedView: View {
-    let expense: Expense
+    let headline: String
+    let message: String
+    let amountMinor: Int64
+    let budgetAlert: BudgetProgress?
+    let actionTitle: String
     let addAnother: () -> Void
 
     @State private var appeared = false
@@ -506,9 +745,9 @@ private struct ExpenseSavedView: View {
             .frame(height: 180)
 
             VStack(spacing: BarabariSpacing.compact) {
-                Text("Expense saved locally")
+                Text(LocalizedStringKey(headline))
                     .font(.title2.weight(.bold))
-                Text("\(expense.title) is now part of this group’s ledger on this iPhone.")
+                Text(message)
                     .font(BarabariTypography.body)
                     .foregroundStyle(BarabariColors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -516,10 +755,16 @@ private struct ExpenseSavedView: View {
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 12)
 
-            HeroAmount(minorUnits: expense.total.minorUnits, currencyCode: expense.total.currencyCode, size: 44, color: BarabariColors.textPrimary)
+            HeroAmount(minorUnits: amountMinor, size: 44, color: BarabariColors.textPrimary)
                 .opacity(appeared ? 1 : 0)
 
-            PrimaryActionButton("Add another expense", action: addAnother)
+            if let budgetAlert {
+                BudgetAlertBanner(progress: budgetAlert)
+                    .opacity(appeared ? 1 : 0)
+                    .scaleEffect(appeared ? 1 : 0.9)
+            }
+
+            PrimaryActionButton(actionTitle, action: addAnother)
                 .opacity(appeared ? 1 : 0)
                 .padding(.top, 12)
         }
@@ -528,6 +773,43 @@ private struct ExpenseSavedView: View {
         .onAppear {
             withAnimation(.spring(response: 0.55, dampingFraction: 0.6)) { appeared = true }
             withAnimation(.easeOut(duration: 1.1).delay(0.15)) { ripple = true }
+            if budgetAlert != nil { BarabariInteraction.trigger(.error) }
         }
+    }
+}
+
+/// "Food budget: 86% used" — shown right after a save that crosses 80%.
+struct BudgetAlertBanner: View {
+    let progress: BudgetProgress
+
+    private var tint: Color { progress.level == .over ? BarabariColors.danger : BarabariColors.warning }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: progress.level == .over ? "exclamationmark.octagon.fill" : "exclamationmark.triangle.fill")
+                .font(.title3)
+                .foregroundStyle(tint)
+                .symbolEffect(.wiggle, options: .nonRepeating)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(progress.level == .over
+                     ? "\(progress.category.title) budget is over"
+                     : "\(progress.category.title) budget: \(Int((progress.fraction * 100).rounded()))% used")
+                    .font(.subheadline.weight(.semibold))
+                Text(progress.level == .over
+                     ? "\(AmountFormatter.string(minorUnits: -progress.remainingMinor, currencyCode: "PKR")) over this month’s limit"
+                     : "\(AmountFormatter.string(minorUnits: progress.remainingMinor, currencyCode: "PKR")) left this month")
+                    .font(.caption)
+                    .foregroundStyle(BarabariColors.textSecondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .background(tint.opacity(0.12), in: .rect(cornerRadius: 20))
+        .overlay {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(tint.opacity(0.3), lineWidth: 1)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("budget-alert")
     }
 }

@@ -9,6 +9,7 @@ struct HomeView: View {
     let addExpense: () -> Void
     let createGroup: () -> Void
     let joinGroup: () -> Void
+    var openSettings: () -> Void = {}
     let selectGroup: (Group) -> Void
     @ObservedObject private var metadata = LedgerMetadata.shared
     @Environment(\.syncEngine) private var syncEngine
@@ -43,6 +44,17 @@ struct HomeView: View {
                     Image(systemName: "qrcode.viewfinder")
                 }
                 .accessibilityLabel("Join group")
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: openSettings) {
+                    if metadata.ownerName.isEmpty {
+                        Image(systemName: "person.crop.circle")
+                    } else {
+                        MemberAvatar(name: metadata.ownerName, seed: AppEnvironment.demoUserID, size: 30)
+                    }
+                }
+                .accessibilityLabel("Settings")
             }
         }
         .task(id: revision) {

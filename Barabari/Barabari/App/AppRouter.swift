@@ -4,9 +4,9 @@ import Foundation
 enum AppTab: String, CaseIterable, Hashable, Identifiable {
     case home
     case groups
+    case money
     case addExpense
     case activity
-    case settings
 
     var id: Self { self }
 
@@ -14,9 +14,9 @@ enum AppTab: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .home: "Home"
         case .groups: "Groups"
+        case .money: "Money"
         case .addExpense: "Add"
         case .activity: "Activity"
-        case .settings: "Settings"
         }
     }
 
@@ -24,9 +24,9 @@ enum AppTab: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .home: "house.fill"
         case .groups: "person.2.fill"
+        case .money: "wallet.bifold.fill"
         case .addExpense: "plus"
         case .activity: "list.bullet.rectangle.fill"
-        case .settings: "gearshape.fill"
         }
     }
 }
@@ -55,6 +55,7 @@ final class AppRouter: ObservableObject {
     @Published var groupPath: [GroupRoute] = []
     @Published var invitePresentation: InvitePresentation?
     @Published var isPresentingCreateGroup = false
+    @Published var isShowingSettings = false
 
     func showGroup(_ group: Group) {
         selectedTab = .groups

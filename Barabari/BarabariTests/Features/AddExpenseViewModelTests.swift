@@ -127,3 +127,53 @@ final class AddExpenseViewModelTests: XCTestCase {
         XCTAssertTrue(page.items.isEmpty)
     }
 }
+
+@MainActor
+final class PersonalEntryTests: XCTestCase {
+    func testJustMeSavesToTheChosenWalletAndWarnsNearTheBudget() async throws {
+        let environment = AppEnvironment(inMemory: true)
+        let finance = environment.personalFinance
+        let bank = try finance.addWallet(name: "Meezan", kind: .bank, openingMinor: 1_000_000)
+        try finance.setBudget(100_000, for: .food)
+
+        let viewModel = AddExpenseViewModel(environment: environment)
+        await viewModel.load()
+        XCTAssertTrue(viewModel.isPersonal, "with no groups, Add starts in Just me")
+
+        viewModel.personalWalletID = bank.id
+        viewModel.amountText = "900"
+        viewModel.title = "Biryani"
+        XCTAssertEqual(viewModel.category, .food)
+
+        let saved = await viewModel.savePersonal()
+        XCTAssertTrue(saved)
+        XCTAssertEqual(viewModel.savedPersonal?.expenseCategory, .food)
+        XCTAssertEqual(finance.balance(of: bank.id), 910_000)
+        XCTAssertEqual(viewModel.budgetAlert?.level, .close)
+    }
+
+    func testIncomeUsesIncomeCategories() async throws {
+        let environment = AppEnvironment(inMemory: true)
+        let viewModel = AddExpenseViewModel(environment: environment)
+        await viewModel.load()
+        viewModel.personalKind = .income
+        viewModel.amountText = "150000"
+        viewModel.title = "October salary"
+        XCTAssertEqual(viewModel.incomeCategory, .salary)
+
+        let saved = await viewModel.savePersonal()
+        XCTAssertTrue(saved)
+        XCTAssertEqual(environment.personalFinance.income(in: .current), 15_000_000)
+        XCTAssertNil(viewModel.budgetAlert)
+    }
+
+    func testInvalidAmountShowsAMessage() async {
+        let environment = AppEnvironment(inMemory: true)
+        let viewModel = AddExpenseViewModel(environment: environment)
+        await viewModel.load()
+        viewModel.amountText = "0"
+        let saved = await viewModel.savePersonal()
+        XCTAssertFalse(saved)
+        XCTAssertNotNil(viewModel.validationMessage)
+    }
+}
