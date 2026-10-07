@@ -290,6 +290,42 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2
 .footer nav { display: flex; gap: 20px; }
 .footer nav a:hover { color: var(--text); }
 
+/* ---------- Motion ---------- */
+/* Headline: each word blurs into focus. */
+.headline .w { display: inline-block; opacity: 0; filter: blur(14px); transform: translateY(18px);
+  animation: wordIn 1.1s var(--ease) forwards; animation-delay: calc(0.15s + var(--i) * 0.12s); }
+.headline .grad .w { background: inherit; -webkit-background-clip: text; background-clip: text; }
+@keyframes wordIn { to { opacity: 1; filter: blur(0); transform: none; } }
+
+/* Primary button: a soft light sweep every few seconds. */
+.shine { position: relative; overflow: hidden; isolation: isolate; }
+.shine::after { content: ""; position: absolute; inset: -40% auto -40% -60%; width: 40%; z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: skewX(-20deg); animation: sweep 4.5s var(--ease) infinite 1.6s; }
+@keyframes sweep { 0% { left: -60%; } 35%, 100% { left: 130%; } }
+
+/* Live notification banner. */
+.toast { transition: opacity 0.45s var(--ease), transform 0.55s var(--ease), filter 0.45s var(--ease); }
+.toast.out { opacity: 0; transform: translateY(14px) scale(0.96); filter: blur(6px); }
+.toast .fc-icon { transition: background 0.3s, color 0.3s; }
+.fc-icon.money { background: rgba(96,165,250,0.18); color: #60a5fa; }
+
+/* Cursor spotlight on glass. */
+.tile, .step, .demo-card, .privacy-card, .budget-card { --mx: 50%; --my: 50%; }
+.tile::before, .step::before, .demo-card::before, .privacy-card::before, .budget-card::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
+  background: radial-gradient(420px circle at var(--mx) var(--my), rgba(52,211,153,0.13), transparent 45%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.tile:hover::before, .step:hover::before, .demo-card:hover::before, .privacy-card:hover::before, .budget-card:hover::before { opacity: 1; }
+.tile > *, .step > *, .demo-card > *, .privacy-card > *, .budget-card > * { position: relative; z-index: 1; }
+.demo-card, .privacy-card, .budget-card { position: relative; }
+
+/* Hero phones drift apart while scrolling (driven by --scroll from JS). */
+.hero-art { --scroll: 0; }
+.p-back-left { translate: calc(var(--scroll) * -60px) calc(var(--scroll) * 40px); }
+.p-back-right { translate: calc(var(--scroll) * 60px) calc(var(--scroll) * 40px); }
+
 /* ---------- Reveal ---------- */
 [data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
 [data-reveal].in { opacity: 1; transform: none; }
@@ -335,4 +371,5 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   [data-reveal] { opacity: 1; transform: none; }
+  .headline .w { opacity: 1; filter: none; transform: none; }
 }

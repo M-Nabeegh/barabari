@@ -82,4 +82,57 @@ people.forEach((person) => {
 amountInput.addEventListener('input', renderSplit);
 renderSplit();
 
+// Live notification feed in the hero, like banners arriving on the phone.
+const toast = document.getElementById('liveToast');
+const feed = [
+  { icon: '✓', kind: '', title: 'Synced', body: 'Ali added “Chai · Rs 1,200”' },
+  { icon: '↙', kind: 'money', title: 'Sara paid you', body: 'Rs 2,325 via Raast' },
+  { icon: '✓', kind: '', title: 'Hunza Trip', body: 'Hamza joined the group' },
+  { icon: '🍴', kind: 'money', title: 'Karahi dinner', body: 'Split 4 ways · Rs 1,162.50 each' },
+];
+if (toast && !reduceMotion) {
+  let index = 0;
+  const icon = toast.querySelector('.fc-icon');
+  const title = toast.querySelector('b');
+  const body = toast.querySelector('small');
+  setInterval(() => {
+    toast.classList.add('out');
+    setTimeout(() => {
+      index = (index + 1) % feed.length;
+      const item = feed[index];
+      icon.textContent = item.icon;
+      icon.className = 'fc-icon' + (item.kind ? ' ' + item.kind : '');
+      title.textContent = item.title;
+      body.textContent = item.body;
+      toast.classList.remove('out');
+    }, 480);
+  }, 3600);
+}
+
+// Emerald spotlight that follows the cursor across glass surfaces.
+if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
+  document.querySelectorAll('.tile, .step, .demo-card, .privacy-card, .budget-card').forEach((el) => {
+    el.addEventListener('pointermove', (event) => {
+      const rect = el.getBoundingClientRect();
+      el.style.setProperty('--mx', `${event.clientX - rect.left}px`);
+      el.style.setProperty('--my', `${event.clientY - rect.top}px`);
+    });
+  });
+}
+
+// Hero phones drift apart as the page scrolls.
+const heroArt = document.querySelector('.hero-art');
+if (heroArt && !reduceMotion) {
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const progress = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+      heroArt.style.setProperty('--scroll', progress.toFixed(3));
+      ticking = false;
+    });
+  }, { passive: true });
+}
+
 document.getElementById('year').textContent = new Date().getFullYear();

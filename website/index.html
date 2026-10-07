@@ -45,10 +45,13 @@
     <section class="hero">
       <div class="hero-copy" data-reveal>
         <span class="pill glass"><span class="dot"></span> برابری means <b>equality</b></span>
-        <h1>Split fairly.<br><span class="grad">Settle simply.</span></h1>
+        <h1 class="headline" aria-label="Split fairly. Settle simply.">
+          <span class="w" style="--i:0">Split</span> <span class="w" style="--i:1">fairly.</span><br>
+          <span class="grad"><span class="w" style="--i:2">Settle</span> <span class="w" style="--i:3">simply.</span></span>
+        </h1>
         <p class="lead">The shared-expense and money app made for Pakistan. Split trips, flats and dinners with friends, settle up over Raast, Easypaisa or JazzCash, and keep an eye on your own spending — all in one place.</p>
         <div class="cta-row">
-          <a class="btn btn-primary" href="#get">
+          <a class="btn btn-primary shine" href="#get">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-2.99-.79-1.54.02-2.96.9-3.75 2.27-1.6 2.78-.41 6.89 1.15 9.14.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.24-.02 2.02-1.12 2.77-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.41-3.66zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
             Coming soon on iPhone
           </a>
@@ -66,7 +69,7 @@
           <img class="phone p-back-left" src="assets/07-group.webp" alt="Barabari group page with balances and people" width="520" height="1067" loading="eager">
           <img class="phone p-front" src="assets/01-home.webp" alt="Barabari home screen showing a net balance of Rs 11,325" width="520" height="1067" loading="eager">
           <img class="phone p-back-right" src="assets/03-keypad.webp" alt="Adding an expense with Barabari's keypad" width="520" height="1067" loading="eager">
-          <div class="float-card glass fc-1">
+          <div class="float-card glass fc-1 toast" id="liveToast" aria-live="polite">
             <span class="fc-icon">✓</span>
             <div><b>Synced</b><small>Ali added “Chai · Rs 1,200”</small></div>
           </div>
