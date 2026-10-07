@@ -349,8 +349,15 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2
 }
 @media (max-width: 620px) {
   body { font-size: 16px; }
-  .section { padding-top: 90px; }
-  .hero-art { height: 470px; }
+  .section { padding-top: 76px; }
+  .hero { padding-bottom: 0; gap: 28px; }
+  .hero-art { height: 430px; }
+  .marquee { padding: 14px 0; }
+  .statement { padding-top: 64px; }
+  .demo { padding-top: 64px; }
+  .section-head { margin-bottom: 36px; }
+  .final-cta { padding: 60px 22px; }
+  .footer { margin-top: 80px; }
   .phone { width: 180px; }
   .p-front { width: 220px; }
   .p-back-left { left: -6%; } .p-back-right { right: -6%; }
@@ -361,6 +368,8 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2
   .tile-tall { grid-row: span 1; }
   .demo-card { padding: 26px; border-radius: 28px; }
   .demo-amount input { font-size: 44px; }
+  .demo-people { gap: 10px; flex-wrap: nowrap; }
+  .person { width: 48px; height: 48px; font-size: 16px; flex: 0 0 auto; }
   #demoEach { font-size: 52px; }
   .privacy-card { padding: 44px 22px; }
   .wallet-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
