@@ -283,6 +283,10 @@ svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2
 }
 .final-cta h2 { margin: 26px 0 12px; }
 .final-cta p { color: rgba(255,255,255,0.75); font-size: 19px; }
+.final-cta .contact-line { margin-top: 26px; font-size: 16px; color: rgba(255,255,255,0.7); }
+.final-cta .contact-line a { color: #fff; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.4); transition: border-color 0.2s; }
+.final-cta .contact-line a:hover { border-color: #fff; }
+.footer a[href^="mailto"]:hover, .legal a:hover { color: var(--text); }
 
 /* ---------- Footer ---------- */
 .footer { margin-top: 120px; border-top: 1px solid rgba(255,255,255,0.07); }
