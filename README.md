@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <a href="https://barabari.site"><b>barabari.site</b></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/iOS-26%2B-000000?style=for-the-badge&logo=apple&logoColor=white" alt="iOS 26+">
   <img src="https://img.shields.io/badge/SwiftUI-Liquid%20Glass-10B981?style=for-the-badge&logo=swift&logoColor=white" alt="SwiftUI Liquid Glass">
   <img src="https://img.shields.io/badge/Currency-PKR-059669?style=for-the-badge" alt="PKR">
