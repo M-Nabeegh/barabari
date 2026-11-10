@@ -126,6 +126,117 @@ final class AddExpenseViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.validationMessage, "Enter a valid amount for each person.")
         XCTAssertTrue(page.items.isEmpty)
     }
+
+    /// A demo ledger whose first group has two people in it.
+    private func twoPersonViewModel() async throws -> (AddExpenseViewModel, [UUID]) {
+        let environment = AppEnvironment(inMemory: true, seedDemoData: true)
+        let group = try await environment.groupRepository.listGroups().first!
+        let friendID = UUID(uuidString: "A1D2E3F4-5A6B-4C7D-8E9F-001122334455")!
+        try await environment.groupRepository.upsertMember(
+            GroupMember(groupID: group.id, userID: friendID, role: .member)
+        )
+        let viewModel = AddExpenseViewModel(environment: environment)
+        await viewModel.load()
+        viewModel.participantIDs = [environment.currentUserID, friendID]
+        return (viewModel, [environment.currentUserID, friendID])
+    }
+
+    func testPercentageSplitSavesWeightedShares() async throws {
+        let (viewModel, people) = try await twoPersonViewModel()
+        viewModel.amountText = "1000"
+        viewModel.title = "Hotel"
+        viewModel.selectSplit(.percentage)
+        viewModel.updatePercentage("70", for: people[0])
+        viewModel.updatePercentage("30", for: people[1])
+
+        XCTAssertEqual(viewModel.percentageRemainingBasisPoints, 0)
+        XCTAssertEqual(viewModel.previewAmount(for: people[0])?.minorUnits, 70_000)
+
+        let saved = await viewModel.save()
+
+        XCTAssertTrue(saved)
+        XCTAssertNil(viewModel.validationMessage)
+        let expense = try XCTUnwrap(viewModel.savedExpense)
+        XCTAssertEqual(expense.splits.first { $0.userID == people[0] }?.amount.minorUnits, 70_000)
+        XCTAssertEqual(expense.splits.first { $0.userID == people[1] }?.amount.minorUnits, 30_000)
+        XCTAssertEqual(expense.splits.reduce(0) { $0 + $1.amount.minorUnits }, 100_000)
+        guard case .percentage = expense.splitMethod else { return XCTFail("Expected a percentage split") }
+    }
+
+    func testPercentagesThatDoNotReachOneHundredAreRefusedWithTheGap() async throws {
+        let (viewModel, people) = try await twoPersonViewModel()
+        viewModel.amountText = "1000"
+        viewModel.title = "Hotel"
+        viewModel.selectSplit(.percentage)
+        viewModel.updatePercentage("60", for: people[0])
+        viewModel.updatePercentage("25.5", for: people[1])
+
+        let saved = await viewModel.save()
+
+        XCTAssertFalse(saved)
+        XCTAssertNil(viewModel.savedExpense)
+        XCTAssertEqual(viewModel.validationMessage, "Percentages must add up to 100%. There is 14.5% left to assign.")
+        XCTAssertTrue(AddExpenseViewModel.isSplitValidation(viewModel.validationMessage ?? ""))
+    }
+
+    func testSplitEvenlyHandsOutEveryHundredthOfAPercent() async throws {
+        let (viewModel, people) = try await twoPersonViewModel()
+        let third = UUID()
+        viewModel.participantIDs = people + [third]
+        viewModel.selectSplit(.percentage)
+
+        viewModel.splitPercentagesEvenly()
+
+        XCTAssertEqual(viewModel.percentageRemainingBasisPoints, 0)
+        let texts = viewModel.participantIDs.map { viewModel.percentageText(for: $0) }
+        XCTAssertEqual(texts, ["33.34", "33.33", "33.33"])
+    }
+
+    func testPercentageInputAcceptsTwoDecimalsAndNothingAboveOneHundred() {
+        XCTAssertEqual(AddExpenseViewModel.parseBasisPoints("33.33"), 3_333)
+        XCTAssertEqual(AddExpenseViewModel.parseBasisPoints("50"), 5_000)
+        XCTAssertEqual(AddExpenseViewModel.parseBasisPoints("12.5"), 1_250)
+        XCTAssertEqual(AddExpenseViewModel.parseBasisPoints("100"), 10_000)
+        XCTAssertNil(AddExpenseViewModel.parseBasisPoints("100.01"))
+        XCTAssertNil(AddExpenseViewModel.parseBasisPoints("1.234"))
+        XCTAssertNil(AddExpenseViewModel.parseBasisPoints("-5"))
+        XCTAssertNil(AddExpenseViewModel.parseBasisPoints("abc"))
+        XCTAssertNil(AddExpenseViewModel.parseBasisPoints(""))
+        XCTAssertEqual(AddExpenseViewModel.percentText(basisPoints: 3_333), "33.33")
+        XCTAssertEqual(AddExpenseViewModel.percentText(basisPoints: 1_250), "12.5")
+        XCTAssertEqual(AddExpenseViewModel.percentText(basisPoints: 5_000), "50")
+    }
+
+    func testSharesSplitInProportionAndAddUpToTheTotal() async throws {
+        let (viewModel, people) = try await twoPersonViewModel()
+        viewModel.amountText = "900"
+        viewModel.title = "Petrol"
+        viewModel.selectSplit(.shares)
+        viewModel.setShareCount(2, for: people[0])
+
+        XCTAssertEqual(viewModel.shareCount(for: people[1]), 1)
+        XCTAssertEqual(viewModel.previewAmount(for: people[0])?.minorUnits, 60_000)
+
+        let saved = await viewModel.save()
+
+        XCTAssertTrue(saved)
+        let expense = try XCTUnwrap(viewModel.savedExpense)
+        XCTAssertEqual(expense.splits.first { $0.userID == people[0] }?.amount.minorUnits, 60_000)
+        XCTAssertEqual(expense.splits.first { $0.userID == people[1] }?.amount.minorUnits, 30_000)
+        guard case .shares = expense.splitMethod else { return XCTFail("Expected a shares split") }
+    }
+
+    func testShareCountsStayBetweenOneAndTheMaximum() async throws {
+        let (viewModel, people) = try await twoPersonViewModel()
+        let person = people[0]
+        viewModel.selectSplit(.shares)
+
+        viewModel.setShareCount(0, for: person)
+        XCTAssertEqual(viewModel.shareCount(for: person), 1)
+
+        viewModel.setShareCount(500, for: person)
+        XCTAssertEqual(viewModel.shareCount(for: person), AddExpenseViewModel.maximumShares)
+    }
 }
 
 @MainActor

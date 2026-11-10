@@ -11,6 +11,7 @@ struct BarabariApp: App {
             let suiteName = "barabari.uitests"
             UserDefaults().removePersistentDomain(forName: suiteName)
             LedgerMetadata.shared = LedgerMetadata(defaults: UserDefaults(suiteName: suiteName) ?? .standard)
+            RecurringExpenseStore.shared = RecurringExpenseStore(defaults: UserDefaults(suiteName: suiteName) ?? .standard)
         }
         if arguments.contains("-uiTestingDemoState") {
             environment = AppEnvironment(

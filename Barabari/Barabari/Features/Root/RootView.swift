@@ -114,7 +114,12 @@ struct RootView: View {
         .onChange(of: sync.remoteChangeCount) { _, _ in session.markRemoteChanged() }
         .onChange(of: scenePhase, initial: true) { _, phase in
             switch phase {
-            case .active: sync.appBecameActive()
+            case .active:
+                sync.appBecameActive()
+                Task {
+                    let added = await RecurringExpenseStore.shared.postDue(environment: environment)
+                    if added > 0 { session.markChanged() }
+                }
             case .background: sync.appWentToBackground()
             default: break
             }

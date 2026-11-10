@@ -435,7 +435,7 @@ struct AddExpenseView: View {
 
                     if let validationMessage = viewModel.validationMessage,
                        !validationMessage.hasPrefix("Add a short title"),
-                       !validationMessage.hasPrefix("Exact amounts") {
+                       !AddExpenseViewModel.isSplitValidation(validationMessage) {
                         validationLabel(validationMessage)
                     }
 
@@ -447,7 +447,7 @@ struct AddExpenseView: View {
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.interactively)
             .onChange(of: viewModel.splitSelection) { _, selection in
-                guard selection == .exact else { return }
+                guard selection != .equal else { return }
                 scroll(to: AddExpenseScrollAnchor.exactShares, using: scrollProxy)
             }
             .onChange(of: focusedField) { _, field in
@@ -580,6 +580,23 @@ struct AddExpenseView: View {
                     } menuItems: {
                         ForEach(viewModel.members) { member in
                             Button(viewModel.memberName(for: member.userID)) { viewModel.payerID = member.userID }
+                        }
+                    }
+                    RowDivider(leading: 64)
+                    selectionMenu(
+                        title: "Repeat",
+                        value: String(localized: String.LocalizationValue(viewModel.repeatFrequency?.title ?? "Never")),
+                        accessibilityLabel: "Repeat"
+                    ) {
+                        IconTile(
+                            systemImage: "repeat",
+                            color: viewModel.repeatFrequency == nil ? BarabariColors.textSecondary : BarabariColors.accent,
+                            size: 36
+                        )
+                    } menuItems: {
+                        Button("Never") { viewModel.repeatFrequency = nil }
+                        ForEach(RecurrenceFrequency.allCases) { frequency in
+                            Button(LocalizedStringKey(frequency.title)) { viewModel.repeatFrequency = frequency }
                         }
                     }
                 }
