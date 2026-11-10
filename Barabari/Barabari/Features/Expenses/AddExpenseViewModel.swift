@@ -4,6 +4,8 @@ import Foundation
 enum ExpenseSplitSelection: String, CaseIterable, Identifiable {
     case equal
     case exact
+    case percentage
+    case shares
 
     var id: Self { self }
 
@@ -11,6 +13,18 @@ enum ExpenseSplitSelection: String, CaseIterable, Identifiable {
         switch self {
         case .equal: "Equal split"
         case .exact: "Exact amount"
+        case .percentage: "Percentages"
+        case .shares: "Shares"
+        }
+    }
+
+    /// Fits four across on the smallest iPhone.
+    var shortTitle: String {
+        switch self {
+        case .equal: "Equal"
+        case .exact: "Exact"
+        case .percentage: "Percent"
+        case .shares: "Shares"
         }
     }
 }
@@ -40,6 +54,8 @@ final class AddExpenseViewModel: ObservableObject {
     @Published var splitSelection: ExpenseSplitSelection = .equal {
         didSet { refreshPreview() }
     }
+    /// Add this expense again every week or month. Nil means it happens once.
+    @Published var repeatFrequency: RecurrenceFrequency?
     @Published var validationMessage: String?
     @Published var previewSplits: [ExpenseSplit] = []
     @Published private(set) var groups: [Group] = []
@@ -63,17 +79,22 @@ final class AddExpenseViewModel: ObservableObject {
     private let environment: AppEnvironment
     private let metadata: LedgerMetadata
     private let memberLoader: (UUID) async throws -> [GroupMember]
+    private let recurring: RecurringExpenseStore
     private var exactAmountTexts: [UUID: String] = [:]
+    private var percentageTexts: [UUID: String] = [:]
+    private var shareCounts: [UUID: Int] = [:]
     private var memberLoadTask: Task<Void, Never>?
     private var memberLoadGeneration = 0
 
     init(
         environment: AppEnvironment,
         metadata: LedgerMetadata? = nil,
-        memberLoader: ((UUID) async throws -> [GroupMember])? = nil
+        memberLoader: ((UUID) async throws -> [GroupMember])? = nil,
+        recurring: RecurringExpenseStore? = nil
     ) {
         self.environment = environment
         self.metadata = metadata ?? .shared
+        self.recurring = recurring ?? .shared
         self.memberLoader = memberLoader ?? { groupID in
             try await environment.groupRepository.members(groupID: groupID)
         }
@@ -150,6 +171,61 @@ final class AddExpenseViewModel: ObservableObject {
         refreshPreview()
     }
 
+    func percentageText(for id: UUID) -> String {
+        percentageTexts[id] ?? ""
+    }
+
+    func updatePercentage(_ text: String, for id: UUID) {
+        percentageTexts[id] = text
+        clearValidationIfNeeded()
+        splitMethod = splitMethodForCurrentInputs()
+        refreshPreview()
+    }
+
+    /// Percent still to hand out, in basis points. Negative when the split is over 100%.
+    var percentageRemainingBasisPoints: Int64 {
+        PercentageBasisPoints.oneHundredPercent - participantIDs.reduce(Int64.zero) {
+            $0 + (Self.parseBasisPoints(percentageTexts[$1] ?? "") ?? 0)
+        }
+    }
+
+    /// Gives everyone the same percentage, with any leftover hundredths going to the first people.
+    func splitPercentagesEvenly() {
+        guard !participantIDs.isEmpty else { return }
+        let count = Int64(participantIDs.count)
+        let base = PercentageBasisPoints.oneHundredPercent / count
+        let extra = PercentageBasisPoints.oneHundredPercent % count
+        for (index, id) in participantIDs.enumerated() {
+            percentageTexts[id] = Self.percentText(basisPoints: base + (Int64(index) < extra ? 1 : 0))
+        }
+        clearValidationIfNeeded()
+        splitMethod = splitMethodForCurrentInputs()
+        refreshPreview()
+    }
+
+    static let maximumShares = 99
+
+    func shareCount(for id: UUID) -> Int {
+        shareCounts[id] ?? 1
+    }
+
+    func setShareCount(_ count: Int, for id: UUID) {
+        shareCounts[id] = min(max(count, 1), Self.maximumShares)
+        clearValidationIfNeeded()
+        splitMethod = splitMethodForCurrentInputs()
+        refreshPreview()
+    }
+
+    /// The amount this person would owe with the inputs as they are now.
+    func previewAmount(for id: UUID) -> Money? {
+        previewSplits.first { $0.userID == id }?.amount
+    }
+
+    /// True for messages the split editor shows next to its own fields.
+    static func isSplitValidation(_ message: String) -> Bool {
+        message.hasPrefix("Exact amounts") || message.hasPrefix("Percentages") || message.hasPrefix("Enter a percentage")
+    }
+
     var category: ExpenseCategory { detectedCategory ?? .other }
 
     func chooseCategory(_ category: ExpenseCategory) {
@@ -169,6 +245,9 @@ final class AddExpenseViewModel: ObservableObject {
         splitSelection = .equal
         splitMethod = .equal
         exactAmountTexts = [:]
+        percentageTexts = [:]
+        shareCounts = [:]
+        repeatFrequency = nil
         previewSplits = []
         validationMessage = nil
         savedExpense = nil
@@ -242,6 +321,9 @@ final class AddExpenseViewModel: ObservableObject {
                 groupRepository: environment.groupRepository
             ).call(draft: draft, idempotencyKey: UUID())
             metadata.setCategory(category, for: expense.id)
+            if let repeatFrequency {
+                recurring.add(from: expense, category: category, frequency: repeatFrequency)
+            }
             budgetAlert = await budgetWarning(for: category, in: MonthPeriod(containing: expense.occurredAt))
             savedExpense = expense
             previewSplits = expense.splits
@@ -282,6 +364,8 @@ final class AddExpenseViewModel: ObservableObject {
                 payerID = memberIDs.contains(environment.currentUserID) ? environment.currentUserID : memberIDs.first
             }
             exactAmountTexts = exactAmountTexts.filter { memberIDs.contains($0.key) }
+            percentageTexts = percentageTexts.filter { memberIDs.contains($0.key) }
+            shareCounts = shareCounts.filter { memberIDs.contains($0.key) }
             splitMethod = splitMethodForCurrentInputs()
             refreshPreview()
         } catch {
@@ -305,6 +389,10 @@ final class AddExpenseViewModel: ObservableObject {
             method = .equal
         case .exact:
             method = .exact(try exactAmountsForCurrentInputs())
+        case .percentage:
+            method = .percentage(try percentagesForCurrentInputs())
+        case .shares:
+            method = .shares(sharesForCurrentInputs())
         }
         splitMethod = method
         return ExpenseDraft(
@@ -329,7 +417,55 @@ final class AddExpenseViewModel: ObservableObject {
                 ($0, (try? parseMoney(exactAmountTexts[$0] ?? "").minorUnits) ?? 0)
             })
             return .exact(values)
+        case .percentage:
+            let values = Dictionary(uniqueKeysWithValues: participantIDs.map {
+                ($0, Self.parseBasisPoints(percentageTexts[$0] ?? "") ?? 0)
+            })
+            return .percentage(values)
+        case .shares:
+            return .shares(sharesForCurrentInputs())
         }
+    }
+
+    private func sharesForCurrentInputs() -> [UUID: Int64] {
+        Dictionary(uniqueKeysWithValues: participantIDs.map { ($0, Int64(shareCount(for: $0))) })
+    }
+
+    private func percentagesForCurrentInputs() throws -> [UUID: Int64] {
+        try Dictionary(uniqueKeysWithValues: participantIDs.map { participantID in
+            let text = percentageTexts[participantID] ?? ""
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let basisPoints = trimmed.isEmpty ? 0 : Self.parseBasisPoints(trimmed) else {
+                throw AddExpenseValidationError.invalidPercentage
+            }
+            return (participantID, basisPoints)
+        })
+    }
+
+    /// "33.33" becomes 3333. Up to two decimal places, never above 100.
+    static func parseBasisPoints(_ input: String) -> Int64? {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        let parts = trimmed.split(separator: ".", omittingEmptySubsequences: false)
+        guard (1...2).contains(parts.count),
+              let wholeText = parts.first, !wholeText.isEmpty, wholeText.count <= 3,
+              wholeText.allSatisfy({ $0.isASCII && $0.isNumber }),
+              let whole = Int64(wholeText) else { return nil }
+        var fraction = Int64.zero
+        if parts.count == 2 {
+            let fractionText = parts[1]
+            guard fractionText.count <= 2, fractionText.allSatisfy({ $0.isASCII && $0.isNumber }) else { return nil }
+            fraction = Int64(String(fractionText).padding(toLength: 2, withPad: "0", startingAt: 0)) ?? 0
+        }
+        let basisPoints = whole * 100 + fraction
+        return basisPoints <= PercentageBasisPoints.oneHundredPercent ? basisPoints : nil
+    }
+
+    /// 3333 becomes "33.33", 5000 becomes "50".
+    static func percentText(basisPoints: Int64) -> String {
+        let whole = basisPoints / 100
+        let fraction = basisPoints % 100
+        if fraction == 0 { return "\(whole)" }
+        return fraction % 10 == 0 ? "\(whole).\(fraction / 10)" : String(format: "%lld.%02lld", whole, fraction)
     }
 
     private func exactAmountsForCurrentInputs() throws -> [UUID: Int64] {
@@ -409,6 +545,14 @@ final class AddExpenseViewModel: ObservableObject {
         case SplitError.invalidExactTotal:
             let amount = (try? parseMoney(amountText)).map { AmountFormatter.string(minorUnits: $0.minorUnits, currencyCode: $0.currencyCode) } ?? "the total"
             return "Exact amounts must add up to \(amount)."
+        case AddExpenseValidationError.invalidPercentage:
+            return "Enter a percentage from 0 to 100 for each person."
+        case SplitError.invalidPercentageTotal:
+            let remaining = percentageRemainingBasisPoints
+            let gap = Self.percentText(basisPoints: abs(remaining))
+            return remaining > 0
+                ? "Percentages must add up to 100%. There is \(gap)% left to assign."
+                : "Percentages must add up to 100%. They are \(gap)% over."
         case SplitError.nonPositiveTotal:
             return "Enter an amount greater than PKR 0."
         default:
@@ -424,6 +568,7 @@ final class AddExpenseViewModel: ObservableObject {
 private enum AddExpenseValidationError: Error {
     case invalidAmount
     case invalidExactAmount
+    case invalidPercentage
     case noGroup
     case noPayer
 }

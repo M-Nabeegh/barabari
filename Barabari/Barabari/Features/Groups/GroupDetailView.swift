@@ -15,6 +15,7 @@ struct GroupDetailView: View {
     @State private var renamingMember: GroupMember?
     @State private var shareTransfer: BalanceTransfer?
     @ObservedObject private var metadata = LedgerMetadata.shared
+    @ObservedObject private var recurring = RecurringExpenseStore.shared
     @State private var toast: String?
 
     init(
@@ -238,6 +239,58 @@ struct GroupDetailView: View {
                 }
             }
             .staggeredAppear(3)
+
+            let repeating = recurring.items(in: snapshot.group.id)
+            if !repeating.isEmpty {
+                VStack(alignment: .leading, spacing: BarabariSpacing.row) {
+                    SectionHeader("Repeating")
+                    BarabariCard(padding: 0) {
+                        VStack(spacing: 0) {
+                            ForEach(Array(repeating.enumerated()), id: \.element.id) { index, item in
+                                if index > 0 { RowDivider() }
+                                HStack(spacing: 14) {
+                                    IconTile(
+                                        systemImage: item.category?.systemImage ?? "repeat",
+                                        color: item.category?.color ?? BarabariColors.accent,
+                                        size: 38
+                                    )
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(item.title)
+                                            .font(BarabariTypography.body.weight(.medium))
+                                            .lineLimit(1)
+                                        if let reason = item.pausedReason {
+                                            Text(LocalizedStringKey(reason))
+                                                .font(BarabariTypography.metadata)
+                                                .foregroundStyle(BarabariColors.danger)
+                                        } else {
+                                            Text("\(Text(LocalizedStringKey(item.frequency.title))) · next \(item.nextDueAt, format: .dateTime.day().month(.abbreviated))")
+                                                .font(BarabariTypography.metadata)
+                                                .foregroundStyle(BarabariColors.textSecondary)
+                                        }
+                                    }
+                                    Spacer(minLength: 0)
+                                    AmountText(minorUnits: item.total.minorUnits, currencyCode: item.total.currencyCode, style: .compact)
+                                    Menu {
+                                        Button("Stop repeating", systemImage: "xmark.circle", role: .destructive) {
+                                            withAnimation(.snappy) { recurring.remove(item.id) }
+                                            showToast("Stopped repeating")
+                                        }
+                                    } label: {
+                                        Image(systemName: "ellipsis")
+                                            .font(.body.weight(.semibold))
+                                            .foregroundStyle(BarabariColors.textSecondary)
+                                            .frame(width: 36, height: 36)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .accessibilityLabel("Options for \(item.title)")
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                            }
+                        }
+                    }
+                }
+            }
 
             VStack(alignment: .leading, spacing: BarabariSpacing.row) {
                 SectionHeader("Latest")

@@ -11,3 +11,8 @@ build/
 .env
 .env.*
 !.env.example
+
+# Local tooling
+.mcp.json
+.superpowers/
+docs/superpowers/

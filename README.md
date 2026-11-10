@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/iOS-26%2B-000000?style=for-the-badge&logo=apple&logoColor=white" alt="iOS 26+">
   <img src="https://img.shields.io/badge/SwiftUI-Liquid%20Glass-10B981?style=for-the-badge&logo=swift&logoColor=white" alt="SwiftUI Liquid Glass">
   <img src="https://img.shields.io/badge/Currency-PKR-059669?style=for-the-badge" alt="PKR">
-  <img src="https://img.shields.io/badge/Data-On%20device-111827?style=for-the-badge" alt="On device">
+  <img src="https://img.shields.io/badge/Data-On%20device%20first-111827?style=for-the-badge" alt="On device first">
 </p>
 
 ---
@@ -28,7 +28,7 @@
 
 Add what you spent, choose who it's split with, and Barabari shows who owes whom. When someone pays you back over **Raast, Easypaisa, JazzCash**, a bank transfer or cash, you record it in a tap. Barabari **never moves money**. It just keeps the record clear, so no one has to remember who paid for the petrol.
 
-Everything is stored **on your iPhone**. There's no account, no sign-up and no server.
+Everything is stored **on your iPhone** first, and the app works with no account and no sign-up. Turn on cloud sync in Settings when you want friends to see the same group from their own phones.
 
 ---
 
@@ -80,7 +80,8 @@ Everything is stored **on your iPhone**. There's no account, no sign-up and no s
 
 | | |
 |---|---|
-| 💸 **Expenses** | Equal or exact splits, paise-accurate rounding, any payer, any subset of people |
+| 💸 **Expenses** | Split equally, by exact amounts, by percentage or by shares; paise-accurate rounding, any payer, any subset of people |
+| 🔁 **Repeating** | Rent, the maid's salary or a shared subscription added again every week or month, on the same day |
 | 🏷️ **Smart categories** | 10 categories, auto-detected from titles like *biryani*, *Careem*, *K-Electric*, *Hunza hotel* |
 | 👥 **People** | Add and rename group members; avatars with initials and colors |
 | 🤝 **Settle up** | Record payments made with Raast, Easypaisa, JazzCash, a bank, cash or anything else; full or partial |
@@ -88,7 +89,8 @@ Everything is stored **on your iPhone**. There's no account, no sign-up and no s
 | 📊 **Insights** | A “Where your money went” donut chart of your own share by category |
 | 🔗 **Invites** | QR codes and `barabari://join` links |
 | 📱 **Widget** | Net balance on your Home Screen and Lock Screen |
-| 🔒 **Privacy** | Optional Face ID lock, hidden in the app switcher, data never leaves the phone |
+| ☁️ **Sync** | Optional. Friends join a group with a link or QR code and everyone sees the same ledger |
+| 🔒 **Privacy** | Optional Face ID lock, hidden in the app switcher, nothing leaves the phone unless you turn sync on |
 | 📤 **Export** | Your whole ledger as JSON or CSV |
 | ✨ **Feel** | Native Liquid Glass, spring animations, rolling numbers, haptics everywhere |
 
@@ -97,7 +99,8 @@ Everything is stored **on your iPhone**. There's no account, no sign-up and no s
 ## Built with
 
 - **SwiftUI** on **iOS 26**: the native Liquid Glass tab bar, `glassEffect`, zoom transitions, `MeshGradient`, SF Symbols animations
-- **SwiftData** for the local ledger, with domain, data and feature layers kept separate so a sync backend can be added later
+- **SwiftData** for the local ledger, with domain, data and feature layers kept separate
+- **Supabase** (Postgres with row-level security and anonymous sign-in) for optional sync; the schema and its tests are in [`supabase/`](supabase/)
 - **WidgetKit** for the Home Screen and Lock Screen balance widget
 - **Swift Charts** for spending insights
 - **LocalAuthentication** for the Face ID lock
@@ -121,7 +124,7 @@ cd Barabari
 xcodebuild test -scheme Barabari -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 ```
 
-Unit tests cover the split math, the ledger, persistence, categories and keypad input. UI tests walk through adding expenses, settling up, invites and adding people.
+Unit tests cover the split math, the ledger, persistence, sync, repeating expenses, categories and keypad input. UI tests walk through adding expenses, settling up, invites and adding people.
 
 ---
 
@@ -130,9 +133,12 @@ Unit tests cover the split math, the ledger, persistence, categories and keypad 
 - [x] Local-first ledger with equal & exact splits
 - [x] Liquid Glass redesign, onboarding, widget, Face ID
 - [x] Real names, categories, WhatsApp reminders
-- [ ] Cloud sync, so friends can join from their own phones
+- [x] Cloud sync, so friends can join from their own phones
+- [x] Percentage and share splits
+- [x] Repeating expenses (rent, bills)
 - [ ] Receipt scanning
-- [ ] Recurring expenses (rent, bills)
+- [ ] Urdu
+- [ ] App Store release
 
 ---
 
